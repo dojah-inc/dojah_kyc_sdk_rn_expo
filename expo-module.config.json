@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["DojahKycSdkReactExpoModule"]
+  },
+  "android": {
+    "modules": ["com.dojah.dojah_Kyc_rn_expo.DojahKycSdkReactExpoModule"]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "dojah-kyc-sdk-react-expo": ["../src/index"],
+      "dojah-kyc-sdk-react-expo/*": ["../src/*"]
+    }
+  }
+}
