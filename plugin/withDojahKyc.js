@@ -45,18 +45,15 @@ function withGradlePropertiesModification(config) {
       config.modResults = [];
     }
 
-    // Add new entries
-    config.modResults.push(
-      [{
-        key: 'org.gradle.jvmargs',
-        value:
-          '-Xmx4096m -XX:MaxMetaspaceSize=512m -XX:MaxPermSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8',
-      },
+    [
       {
+        type: 'property',
         key: 'android.enableJetifier',
         value: 'true',
-      }]
-    );
+      }
+    ].map((entry) => {
+      config.modResults.push(entry);
+    });
 
     return config;
   });

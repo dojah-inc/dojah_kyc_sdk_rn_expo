@@ -6,6 +6,19 @@
 npm install dojah-kyc-sdk-react-expo
 ```
 
+
+## Android Setup
+
+### Requirements
+* Minimum Android SDK version - 21
+* Supported targetSdkVersion - 35
+
+
+Enable jetifier in grade.properties:
+```
+android.enableJetifier=true
+```
+
 ### Permissions
 
 For Android you don't need to declare permissions, its already included in the Package.
