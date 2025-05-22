@@ -6,67 +6,62 @@
 npm install dojah-kyc-sdk-react-expo
 ```
 
+## Setup
 
-## Android Setup
-
-### Requirements
-* Minimum Android SDK version - 21
-* Supported targetSdkVersion - 35
-
-
-Enable jetifier in grade.properties:
-```
-android.enableJetifier=true
-```
-
-### Permissions
-
-For Android you don't need to declare permissions, its already included in the Package.
-
-## IOS Setup
-
-### Requirements
-
-* Minimum iOS version - 14
-
-### Add the following POD dependencies in your Podfile app under your App target
-
-```
-  pod 'Realm', '~> 10.52.2', :modular_headers => true
-  pod 'DojahWidget', :git => 'https://github.com/dojah-inc/sdk-swift.git', :branch => 'pod-package'
-```
-
-example
-
-```
-target 'Example' do
-  ...
-  pod 'Realm', '~> 10.52.2', :modular_headers => true
-  pod 'DojahWidget', :git => 'https://github.com/dojah-inc/sdk-swift.git', :branch => 'pod-package'
-  ...
-end
-```
-
-and run pod install in your ios folder:
+### Install expo-build-properties if you don't have it
 
 ```sh
-cd ios
-pod install
+npx expo install expo-build-properties
 ```
 
-### Permissions
+### Add the following plugins and permissions in your app.json
+```json
+{
+  "expo": {
+    ...
+    "ios": {
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses location services to provide a better experience.",
+        "NSLocationAlwaysUsageDescription": "This app uses location services to provide a better experience.",
+        "NSLocationUsageDescription": "This app uses location services to provide a better experience.",
+        "NSPhotoLibraryUsageDescription": "This app uses the photo library to provide a better experience.",
+        "NSCameraUsageDescription": "This app uses the camera to provide a better experience.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to provide a better experience."
+      }
+    },
+    "plugins": [
+      ...
+      "dojah-kyc-sdk-react-expo",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              {
+                "name": "Realm",
+                "version": "~> 10.52.2",
+                "modular_headers": true
+              },
+              {
+                "name": "DojahWidget",
+                "git": "https://github.com/dojah-inc/sdk-swift.git",
+                "branch": "pod-package"
+              }
+            ]
+          }
+        }
+      ]
+    ]
+  }
+}
+```
 
-For IOS, Add the following keys to your Info.plist file:
+### Run prebuild:
 
-NSCameraUsageDescription - describe why your app needs access to the camera. This is called
-Privacy - Camera Usage Description in the visual editor.
+```sh
+npx expo prebuild
+```
 
-NSMicrophoneUsageDescription - describe why your app needs access to the microphone, if you intend
-to record videos. This is called Privacy - Microphone Usage Description in the visual editor.
-
-NSLocationWhenInUseUsageDescription - describe why your app needs access to the location, if you
-intend to verify address/location. This is called Privacy - Location Usage Description in the visual
-editor.
 
 ## Usage
 

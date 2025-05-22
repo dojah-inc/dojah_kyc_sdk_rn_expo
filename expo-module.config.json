@@ -1,9 +1,20 @@
 {
-  "platforms": ["apple", "android", "web"],
+  "platforms": [
+    "apple",
+    "android",
+    "web"
+  ],
   "apple": {
-    "modules": ["DojahKycSdkReactExpoModule"]
+    "modules": [
+      "DojahKycSdkReactExpoModule"
+    ],
+    "appDelegateSubscribers": [
+      "DojahKycScreenDelegate"
+    ]
   },
   "android": {
-    "modules": ["com.dojah.dojah_Kyc_rn_expo.DojahKycSdkReactExpoModule"]
+    "modules": [
+      "com.dojah.dojah_Kyc_rn_expo.DojahKycSdkReactExpoModule"
+    ]
   }
 }

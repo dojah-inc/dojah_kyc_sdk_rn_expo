@@ -53,6 +53,23 @@ public class AppDelegate: ExpoAppDelegate {
 }
 
 class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
+
+  override func createRootViewController() -> UIViewController {
+    let rootVC = UIViewController()
+    let nav = UINavigationController(rootViewController: rootVC)
+    return nav
+  }
+
+  override func setRootView(_ rootView: UIView, toRootViewController rootViewController: UIViewController) {
+    if let nav = rootViewController as? UINavigationController,
+       let firstVC = nav.viewControllers.first {
+      firstVC.view = rootView
+    } else {
+      rootViewController.view = rootView
+    }
+  }
+
+
   // Extension point for config-plugins
 
   override func sourceURL(for bridge: RCTBridge) -> URL? {

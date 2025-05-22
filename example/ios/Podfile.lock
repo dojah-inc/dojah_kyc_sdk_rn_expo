@@ -1,7 +1,15 @@
 PODS:
   - boost (1.84.0)
   - DojahKycSdkReactExpo (0.1.0):
+    - DojahWidget
     - ExpoModulesCore
+  - DojahWidget (1.0.2):
+    - GooglePlaces (~> 8.5.0)
+    - HorizonCalendar (~> 1.16.0)
+    - IQKeyboardManagerSwift (~> 7.1.1)
+    - Kingfisher (~> 7.12.0)
+    - lottie-ios (~> 4.3.3)
+    - RealmSwift (~> 10.52.2)
   - DoubleConversion (1.1.6)
   - EXConstants (17.1.6):
     - ExpoModulesCore
@@ -69,9 +77,14 @@ PODS:
   - FBLazyVector (0.79.2)
   - fmt (11.0.2)
   - glog (0.3.5)
+  - GooglePlaces (8.5.0)
   - hermes-engine (0.79.2):
     - hermes-engine/Pre-built (= 0.79.2)
   - hermes-engine/Pre-built (0.79.2)
+  - HorizonCalendar (1.16.0)
+  - IQKeyboardManagerSwift (7.1.1)
+  - Kingfisher (7.12.0)
+  - lottie-ios (4.3.4)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1718,12 +1731,18 @@ PODS:
     - React-logger (= 0.79.2)
     - React-perflogger (= 0.79.2)
     - React-utils (= 0.79.2)
+  - Realm (10.52.3):
+    - Realm/Headers (= 10.52.3)
+  - Realm/Headers (10.52.3)
+  - RealmSwift (10.52.3):
+    - Realm (= 10.52.3)
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DojahKycSdkReactExpo (from `../../ios`)
+  - DojahWidget (from `https://github.com/dojah-inc/sdk-swift.git`, branch `pod-package`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
@@ -1801,10 +1820,18 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - Realm (~> 10.52.2)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
+    - GooglePlaces
+    - HorizonCalendar
+    - IQKeyboardManagerSwift
+    - Kingfisher
+    - lottie-ios
+    - Realm
+    - RealmSwift
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -1812,6 +1839,9 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DojahKycSdkReactExpo:
     :path: "../../ios"
+  DojahWidget:
+    :branch: pod-package
+    :git: https://github.com/dojah-inc/sdk-swift.git
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXConstants:
@@ -1966,9 +1996,15 @@ EXTERNAL SOURCES:
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
+CHECKOUT OPTIONS:
+  DojahWidget:
+    :commit: 1e68e3afd7d95612f0edf3bd80d968a8fb9fb92a
+    :git: https://github.com/dojah-inc/sdk-swift.git
+
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
-  DojahKycSdkReactExpo: cebb7ff26c049e53a1909a73aac43a2b967c0763
+  DojahKycSdkReactExpo: ba3ca7e26174bd17b1f789a216dbb4e78cdb0505
+  DojahWidget: a89fe1aefb3dbb42f4886fa2d1e9977bf37b364d
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: 9f310f44bfedba09087042756802040e464323c0
   Expo: a9fc723f6c8f673f0e7e036c9021772d3a1a0707
@@ -1981,7 +2017,12 @@ SPEC CHECKSUMS:
   FBLazyVector: 84b955f7b4da8b895faf5946f73748267347c975
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  GooglePlaces: 426efb69051e7b460e16300ba63598687d10fa1a
   hermes-engine: 314be5250afa5692b57b4dd1705959e1973a8ebe
+  HorizonCalendar: 90d7281cf1cd0cb3fae1d3e53f6f7fd24fda5a0e
+  IQKeyboardManagerSwift: d7f3d3a562c237a0e7335e657cd598c452f57f1b
+  Kingfisher: 53a10ea35051a436b5fb626ca2dd8f3144d755e9
+  lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 83ffb90c23ee5cea353bd32008a7bca100908f8c
   RCTRequired: eb7c0aba998009f47a540bec9e9d69a54f68136e
@@ -2044,6 +2085,8 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 04d5eb15eb46be6720e17a4a7fa92940a776e584
   ReactCodegen: c63eda03ba1d94353fb97b031fc84f75a0d125ba
   ReactCommon: 76d2dc87136d0a667678668b86f0fca0c16fdeb0
+  Realm: f9d340f510309e52a393d65c56103ef524d88a43
+  RealmSwift: 673454b09bc096853ee530e824847f38cdc21243
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: c758bfb934100bb4bf9cbaccb52557cee35e8bdf
 

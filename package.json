@@ -4,7 +4,7 @@
   "description": "Dojah Kyc",
   "main": "build/index.js",
   "types": "build/index.d.ts",
-    "expo": {
+  "expo": {
     "plugins": [
       "./app.plugin.js"
     ]
@@ -33,16 +33,18 @@
   "author": "dojah-inc < dojah-inc@dojah.io> (https://github.com/dojah-inc)",
   "license": "MIT",
   "homepage": "https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo#readme",
-  "dependencies": {},
   "devDependencies": {
     "@types/react": "~19.0.0",
-    "expo-module-scripts": "^4.1.6",
     "expo": "~53.0.0",
+    "expo-module-scripts": "^4.1.6",
     "react-native": "0.79.1"
   },
   "peerDependencies": {
     "expo": "*",
     "react": "*",
     "react-native": "*"
+  },
+  "dependencies": {
+    "expo-build-properties": "~0.14.6"
   }
 }

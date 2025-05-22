@@ -14,7 +14,8 @@ export default function App() {
             title="Launch Dojah KYC"
             onPress={async () => {
               console.log('launching Dojah KYC');
-              const status = await DojahKycSdk.launch('67a31733f84e4cd6ffbcf06a', null, null, {
+              const status = await DojahKycSdk.launch(
+                '67a31733f84e4cd6ffbcf06a', null, null, {
                 userData: {
                   firstName: 'John',
                   lastName: 'Doe',
