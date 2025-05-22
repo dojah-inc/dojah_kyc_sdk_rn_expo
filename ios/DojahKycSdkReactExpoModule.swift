@@ -1,40 +1,84 @@
 import ExpoModulesCore
 import DojahWidget
 
+class MyNavigationControllerDelegate: NSObject, UINavigationControllerDelegate {
+    var onDidShow: (UIViewController) -> Void = { _ in }
+    func navigationController(_ navigationController: UINavigationController,
+                              didShow viewController: UIViewController,
+                              animated: Bool) {
+        print("Did show: \(viewController)")
+        onDidShow(viewController)
+    }
+
+    func navigationController(_ navigationController: UINavigationController,
+                              willShow viewController: UIViewController,
+                              animated: Bool) {
+        print("Will show: \(viewController)")
+    }
+    
+    func setOnDidShow(_ onDidShow: @escaping (UIViewController) -> Void) {
+        self.onDidShow = onDidShow
+    }
+}
+
 public class DojahKycSdkReactExpoModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
+    
+    var mPromise:Promise? = nil
+    
+    let navDelegate = MyNavigationControllerDelegate()
+ 
+    let navCtrl = UIApplication.shared.keyWindow?.rootViewController as? UINavigationController
+    
+    var prevController:UIViewController? = nil
+
+    required public init(appContext: AppContext) {
+        super.init(appContext: appContext)
+        navDelegate.setOnDidShow { vc in
+            print("onDidShow: \(vc)")
+            //return result from DojahWidget once verification
+            //is done,failed or cancel
+            if(!String(describing:vc).contains("DojahWidget")){
+                let vStatus = DojahWidgetSDK.getVerificationResultStatus()
+                let status = if(vStatus.isEmpty){  "closed"} else {vStatus}
+                self.mPromise?.resolve(status)
+                self.prevController = nil
+            }else if(String(describing:vc).contains("DojahWidget.DJDisclaimer")
+                     && self.prevController != nil){
+                self.navCtrl?.popToRootViewController(animated: false)
+            }else if(!String(describing:vc).contains("DojahWidget.SDKInitViewController")){
+                self.prevController = vc
+            }
+        }
+        
+        if navCtrl != nil {
+            navCtrl!.delegate = navDelegate
+        }
+    }
+
   public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('DojahKycSdk')` in JavaScript.
+
     Name("DojahKycSdk")
 
-    // Defines event names that the module can send to JavaScript.
     Events("onChange")
 
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-      AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?,promise:Promise) in
-          
-          guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {
-              print("no root ctrl")
-              return
-          }
-          
-          print("root ctrl: $\(String(describing: rootViewController))")
+    AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?,promise:Promise) in
+          mPromise = promise
 
-          let navController = rootViewController as? UINavigationController
+          let navController = navCtrl
 
           print("nav ctrl: $\(String(describing: navController))")
 
           if(navController == nil){
+              self.mPromise?.reject("002","failed to initialize, can't find navController")
               return
           }
           
           DispatchQueue.main.async {
-              DojahWidgetSDK.initialize(widgetID: widgetId,referenceID: referenceId,emailAddress: email, navController: navController!)
+              do{
+                  DojahWidgetSDK.initialize(widgetID: widgetId,referenceID: referenceId,emailAddress: email, navController: navController!)
+              }catch{
+                  self.mPromise?.reject("001","failed to initialize")
+              }
           }
     }
 

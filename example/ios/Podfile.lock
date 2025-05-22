@@ -1998,7 +1998,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DojahWidget:
-    :commit: 1e68e3afd7d95612f0edf3bd80d968a8fb9fb92a
+    :commit: cb159937da593c761a26c29b94dd664c355d86b8
     :git: https://github.com/dojah-inc/sdk-swift.git
 
 SPEC CHECKSUMS:
