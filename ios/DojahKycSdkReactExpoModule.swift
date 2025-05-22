@@ -1,4 +1,5 @@
 import ExpoModulesCore
+import DojahWidget
 
 public class DojahKycSdkReactExpoModule: Module {
   // Each module class must implement the definition function. The definition consists of components
@@ -15,11 +16,26 @@ public class DojahKycSdkReactExpoModule: Module {
 
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: Record<String, Any>?) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
+      AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?,promise:Promise) in
+          
+          guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {
+              print("no root ctrl")
+              return
+          }
+          
+          print("root ctrl: $\(String(describing: rootViewController))")
+
+          let navController = rootViewController as? UINavigationController
+
+          print("nav ctrl: $\(String(describing: navController))")
+
+          if(navController == nil){
+              return
+          }
+          
+          DispatchQueue.main.async {
+              DojahWidgetSDK.initialize(widgetID: widgetId,referenceID: referenceId,emailAddress: email, navController: navController!)
+          }
     }
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of the
@@ -36,3 +52,147 @@ public class DojahKycSdkReactExpoModule: Module {
     }
   }
 }
+
+
+
+struct ExtraDataRecord : Record {
+    @Field
+    var userData: UserRecord? = nil
+
+    @Field
+    var govData: GovDataRecord? = nil
+
+    @Field
+    var govId: GovIdRecord? = nil
+
+    @Field
+    var location: LocationRecord? = nil
+
+    @Field
+    var businessData: BusinessDataRecord? = nil
+
+    @Field
+    var address: String? = nil
+
+    @Field
+    var metadata: [String:Any]? = nil
+
+//    func toExtraUserData()-> ExtraUserData {
+//        return ExtraUserData(
+//            userData = userData?.toUserData(),
+//            govData = govData?.toGovData(),
+//            govId = govId?.toGovId(),
+//            location = location?.toLocation(),
+//            businessData = businessData?.toBusinessData(),
+//            address = address,
+//            metadata = metadata
+//        )
+//    }
+
+}
+
+
+struct UserRecord : Record {
+    @Field
+    var firstName: String? = nil
+
+    @Field
+    var lastName: String? = nil
+
+    @Field
+    var dob: String? = nil
+
+    @Field
+    var email: String? = nil
+
+//    func toUserData(): UserData {
+//        return UserData(
+//            firstName = firstName,
+//            lastName = lastName,
+//            dob = dob,
+//            email = email
+//        )
+//    }
+}
+
+struct GovDataRecord : Record {
+    
+    @Field
+    var bvn: String? = nil
+
+    @Field
+    var dl: String? = nil
+
+    @Field
+    var nin: String? = nil
+
+    @Field
+    var vnin: String? = nil
+
+//    func toGovData(): GovData {
+//        return GovData(
+//            bvn = bvn,
+//            dl = dl,
+//            nin = nin,
+//            vnin = vnin
+//        )
+//    }
+}
+
+struct GovIdRecord : Record {
+    @Field
+    var national: String? = nil
+
+    @Field
+    var passport: String? = nil
+
+    @Field
+    var dl: String? = nil
+
+    @Field
+    var voter: String? = nil
+
+    @Field
+    var nin: String? = nil
+
+    @Field
+    var others: String? = nil
+
+//    func toGovId(): GovId {
+//        return GovId(
+//            national = national,
+//            passport = passport,
+//            dl = dl,
+//            voter = voter,
+//            nin = nin,
+//            others = others
+//        )
+//    }
+}
+
+struct LocationRecord : Record {
+    @Field
+    var latitude: String? = nil
+
+    @Field
+    var longitude: String? = nil
+
+//    func toLocation(): Location {
+//        return Location(
+//            latitude = latitude,
+//            longitude = longitude
+//        )
+//    }
+}
+
+struct BusinessDataRecord : Record {
+    @Field
+    var cac: String? = nil
+
+//    func toBusinessData(): BusinessData {
+//        return BusinessData(
+//            cac = cac
+//        )
+//    }
+}
+

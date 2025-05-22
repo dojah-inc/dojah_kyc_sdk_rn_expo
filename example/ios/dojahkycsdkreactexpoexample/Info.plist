@@ -44,6 +44,18 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>This app uses the camera to provide a better experience.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app uses location services to provide a better experience.</string>
+    <key>NSLocationUsageDescription</key>
+    <string>This app uses location services to provide a better experience.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app uses location services to provide a better experience.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app uses the microphone to provide a better experience.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app uses the photo library to provide a better experience.</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

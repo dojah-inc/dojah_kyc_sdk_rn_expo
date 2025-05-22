@@ -175,8 +175,3 @@ dependencies {
         implementation jscFlavor
     }
 }
-
-        // dependencies {
-        //     implementation project(':dojah_Kyc_rn_expo')
-        // }
-      

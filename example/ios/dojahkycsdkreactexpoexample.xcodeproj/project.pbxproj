@@ -8,23 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		17893169D9FEFD11985CD60E /* libPods-dojahkycsdkreactexpoexample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30EBA50AE035AEB2DA1FA8DA /* libPods-dojahkycsdkreactexpoexample.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		5CA6AF074401618F7E63461D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5FBADB427D08131485EA9651 /* PrivacyInfo.xcprivacy */; };
-		8C72C473848490074C2B70DD /* libPods-dojahkycsdkreactexpoexample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 268DFAEE068799432C9097D0 /* libPods-dojahkycsdkreactexpoexample.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D82FC9DD2F76F0D2531081D8 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C922AE310CBF998EC80602B /* ExpoModulesProvider.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F2CF25789D4F4E06CF64581E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 71C84CE012362B2F1585C3A2 /* PrivacyInfo.xcprivacy */; };
+		F616BD76C69216AA898E61CD /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82AB1FDD3157720C54735614 /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		06622E7A976120B40F6248A1 /* Pods-dojahkycsdkreactexpoexample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dojahkycsdkreactexpoexample.debug.xcconfig"; path = "Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* dojahkycsdkreactexpoexample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dojahkycsdkreactexpoexample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = dojahkycsdkreactexpoexample/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = dojahkycsdkreactexpoexample/Info.plist; sourceTree = "<group>"; };
-		1C922AE310CBF998EC80602B /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-dojahkycsdkreactexpoexample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		268DFAEE068799432C9097D0 /* libPods-dojahkycsdkreactexpoexample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dojahkycsdkreactexpoexample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		5F2B7D3DD27F1A14EC4A1ABD /* Pods-dojahkycsdkreactexpoexample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dojahkycsdkreactexpoexample.release.xcconfig"; path = "Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample.release.xcconfig"; sourceTree = "<group>"; };
-		5FBADB427D08131485EA9651 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = dojahkycsdkreactexpoexample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		8FFDF73A3CA9C86D8677BC94 /* Pods-dojahkycsdkreactexpoexample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dojahkycsdkreactexpoexample.debug.xcconfig"; path = "Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample.debug.xcconfig"; sourceTree = "<group>"; };
+		30EBA50AE035AEB2DA1FA8DA /* libPods-dojahkycsdkreactexpoexample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dojahkycsdkreactexpoexample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		71C84CE012362B2F1585C3A2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = dojahkycsdkreactexpoexample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		82AB1FDD3157720C54735614 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-dojahkycsdkreactexpoexample/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		A02E7869D142908C4C0F192B /* Pods-dojahkycsdkreactexpoexample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dojahkycsdkreactexpoexample.release.xcconfig"; path = "Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample.release.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = dojahkycsdkreactexpoexample/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -37,21 +37,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8C72C473848490074C2B70DD /* libPods-dojahkycsdkreactexpoexample.a in Frameworks */,
+				17893169D9FEFD11985CD60E /* libPods-dojahkycsdkreactexpoexample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0AB30BDD3C26CE5E2D190DE9 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				62AA146D973B9AA0CC007904 /* dojahkycsdkreactexpoexample */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* dojahkycsdkreactexpoexample */ = {
 			isa = PBXGroup;
 			children = (
@@ -61,26 +53,35 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				5FBADB427D08131485EA9651 /* PrivacyInfo.xcprivacy */,
+				71C84CE012362B2F1585C3A2 /* PrivacyInfo.xcprivacy */,
 			);
 			name = dojahkycsdkreactexpoexample;
+			sourceTree = "<group>";
+		};
+		18AA4B90A79EF54691691636 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				06622E7A976120B40F6248A1 /* Pods-dojahkycsdkreactexpoexample.debug.xcconfig */,
+				A02E7869D142908C4C0F192B /* Pods-dojahkycsdkreactexpoexample.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		216A83A65E0ED8019357AB9A /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				95336E7D8100A4666DDDD087 /* dojahkycsdkreactexpoexample */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				268DFAEE068799432C9097D0 /* libPods-dojahkycsdkreactexpoexample.a */,
+				30EBA50AE035AEB2DA1FA8DA /* libPods-dojahkycsdkreactexpoexample.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		62AA146D973B9AA0CC007904 /* dojahkycsdkreactexpoexample */ = {
-			isa = PBXGroup;
-			children = (
-				1C922AE310CBF998EC80602B /* ExpoModulesProvider.swift */,
-			);
-			name = dojahkycsdkreactexpoexample;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -97,8 +98,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				CDA71607D59E080D100ED5FE /* Pods */,
-				0AB30BDD3C26CE5E2D190DE9 /* ExpoModulesProviders */,
+				18AA4B90A79EF54691691636 /* Pods */,
+				216A83A65E0ED8019357AB9A /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -113,6 +114,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		95336E7D8100A4666DDDD087 /* dojahkycsdkreactexpoexample */ = {
+			isa = PBXGroup;
+			children = (
+				82AB1FDD3157720C54735614 /* ExpoModulesProvider.swift */,
+			);
+			name = dojahkycsdkreactexpoexample;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -120,16 +129,6 @@
 			);
 			name = Supporting;
 			path = dojahkycsdkreactexpoexample/Supporting;
-			sourceTree = "<group>";
-		};
-		CDA71607D59E080D100ED5FE /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				8FFDF73A3CA9C86D8677BC94 /* Pods-dojahkycsdkreactexpoexample.debug.xcconfig */,
-				5F2B7D3DD27F1A14EC4A1ABD /* Pods-dojahkycsdkreactexpoexample.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "dojahkycsdkreactexpoexample" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				C966EA3AA2789F9008F52285 /* [Expo] Configure project */,
+				698DA83819193DC6C414A3E9 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				68FDD291AC6058B067963A28 /* [CP] Embed Pods Frameworks */,
+				B935A12CFF16665C9225929F /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				5CA6AF074401618F7E63461D /* PrivacyInfo.xcprivacy in Resources */,
+				F2CF25789D4F4E06CF64581E /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,57 +239,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		68FDD291AC6058B067963A28 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C966EA3AA2789F9008F52285 /* [Expo] Configure project */ = {
+		698DA83819193DC6C414A3E9 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -309,6 +258,68 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-dojahkycsdkreactexpoexample/expo-configure-project.sh\"\n";
 		};
+		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/DojahWidget/DojahWidgetResources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GooglePlaces/GooglePlacesResources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/IQKeyboardManagerSwift/IQKeyboardManagerSwift.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Kingfisher/Kingfisher.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/Realm/realm_objc_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RealmSwift/realm_swift_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DojahWidgetResources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GooglePlacesResources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/IQKeyboardManagerSwift.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Kingfisher.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/realm_objc_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/realm_swift_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B935A12CFF16665C9225929F /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dojahkycsdkreactexpoexample/Pods-dojahkycsdkreactexpoexample-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -317,7 +328,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				D82FC9DD2F76F0D2531081D8 /* ExpoModulesProvider.swift in Sources */,
+				F616BD76C69216AA898E61CD /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,12 +337,13 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8FFDF73A3CA9C86D8677BC94 /* Pods-dojahkycsdkreactexpoexample.debug.xcconfig */;
+			baseConfigurationReference = 06622E7A976120B40F6248A1 /* Pods-dojahkycsdkreactexpoexample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dojahkycsdkreactexpoexample/dojahkycsdkreactexpoexample.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 729TY2DGQF;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -362,12 +374,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5F2B7D3DD27F1A14EC4A1ABD /* Pods-dojahkycsdkreactexpoexample.release.xcconfig */;
+			baseConfigurationReference = A02E7869D142908C4C0F192B /* Pods-dojahkycsdkreactexpoexample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dojahkycsdkreactexpoexample/dojahkycsdkreactexpoexample.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 729TY2DGQF;
 				INFOPLIST_FILE = dojahkycsdkreactexpoexample/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -445,10 +458,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -503,10 +513,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
