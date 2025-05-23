@@ -1,7 +1,7 @@
 import ExpoModulesCore
 import DojahWidget
 
-class MyNavigationControllerDelegate: NSObject, UINavigationControllerDelegate {
+class DojahNavigationControllerDelegate: NSObject, UINavigationControllerDelegate {
     var onDidShow: (UIViewController) -> Void = { _ in }
     func navigationController(_ navigationController: UINavigationController,
                               didShow viewController: UIViewController,
@@ -25,7 +25,7 @@ public class DojahKycSdkReactExpoModule: Module {
     
     var mPromise:Promise? = nil
     
-    let navDelegate = MyNavigationControllerDelegate()
+    let navDelegate = DojahNavigationControllerDelegate()
  
     let navCtrl = UIApplication.shared.keyWindow?.rootViewController as? UINavigationController
     
@@ -67,19 +67,25 @@ public class DojahKycSdkReactExpoModule: Module {
           let navController = navCtrl
 
           print("nav ctrl: $\(String(describing: navController))")
-
+        
+    
           if(navController == nil){
               self.mPromise?.reject("002","failed to initialize, can't find navController")
               return
           }
-          
-          DispatchQueue.main.async {
-              do{
-                  DojahWidgetSDK.initialize(widgetID: widgetId,referenceID: referenceId,emailAddress: email, navController: navController!)
-              }catch{
-                  self.mPromise?.reject("001","failed to initialize")
-              }
-          }
+        
+        DispatchQueue.main.async {
+            do{
+                DojahWidgetSDK.initialize(
+                    widgetID: widgetId,
+                    referenceID: referenceId,
+                    emailAddress: email,
+                    extraUserData: extraData?.toExtraUserData(),
+                    navController: navController!)
+            }catch{
+                self.mPromise?.reject("001","failed to initialize")
+            }
+        }
     }
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of the
@@ -121,17 +127,17 @@ struct ExtraDataRecord : Record {
     @Field
     var metadata: [String:Any]? = nil
 
-//    func toExtraUserData()-> ExtraUserData {
-//        return ExtraUserData(
-//            userData = userData?.toUserData(),
-//            govData = govData?.toGovData(),
-//            govId = govId?.toGovId(),
-//            location = location?.toLocation(),
-//            businessData = businessData?.toBusinessData(),
-//            address = address,
-//            metadata = metadata
-//        )
-//    }
+    func toExtraUserData()-> ExtraUserData {
+        return ExtraUserData(
+            userData: userData?.toUserData(),
+            govData: govData?.toGovData(),
+            govId: govId?.toGovId(),
+            location: location?.toLocation(),
+            businessData: businessData?.toBusinessData(),
+            address: address,
+            metadata: metadata
+        )
+    }
 
 }
 
@@ -149,14 +155,14 @@ struct UserRecord : Record {
     @Field
     var email: String? = nil
 
-//    func toUserData(): UserData {
-//        return UserData(
-//            firstName = firstName,
-//            lastName = lastName,
-//            dob = dob,
-//            email = email
-//        )
-//    }
+    func toUserData()-> UserBioData {
+        return UserBioData(
+            firstName: firstName,
+            lastName: lastName,
+            dob: dob,
+            email: email
+        )
+    }
 }
 
 struct GovDataRecord : Record {
@@ -173,14 +179,14 @@ struct GovDataRecord : Record {
     @Field
     var vnin: String? = nil
 
-//    func toGovData(): GovData {
-//        return GovData(
-//            bvn = bvn,
-//            dl = dl,
-//            nin = nin,
-//            vnin = vnin
-//        )
-//    }
+    func toGovData()-> ExtraGovData {
+        return ExtraGovData(
+            bvn: bvn,
+            dl: dl,
+            nin: nin,
+            vnin: vnin
+        )
+    }
 }
 
 struct GovIdRecord : Record {
@@ -202,16 +208,16 @@ struct GovIdRecord : Record {
     @Field
     var others: String? = nil
 
-//    func toGovId(): GovId {
-//        return GovId(
-//            national = national,
-//            passport = passport,
-//            dl = dl,
-//            voter = voter,
-//            nin = nin,
-//            others = others
-//        )
-//    }
+    func toGovId()-> ExtraGovIdData {
+        return ExtraGovIdData(
+            national:  national,
+            passport: passport,
+            dl: dl,
+            voter: voter,
+            nin: nin,
+            others: others
+        )
+    }
 }
 
 struct LocationRecord : Record {
@@ -221,22 +227,22 @@ struct LocationRecord : Record {
     @Field
     var longitude: String? = nil
 
-//    func toLocation(): Location {
-//        return Location(
-//            latitude = latitude,
-//            longitude = longitude
-//        )
-//    }
+    func toLocation()-> ExtraLocationData {
+        return ExtraLocationData(
+            longitude: longitude,
+            latitude: latitude
+        )
+    }
 }
 
 struct BusinessDataRecord : Record {
     @Field
     var cac: String? = nil
 
-//    func toBusinessData(): BusinessData {
-//        return BusinessData(
-//            cac = cac
-//        )
-//    }
+    func toBusinessData()-> ExtraBusinessData {
+        return ExtraBusinessData(
+            cac: cac
+        )
+    }
 }
 
