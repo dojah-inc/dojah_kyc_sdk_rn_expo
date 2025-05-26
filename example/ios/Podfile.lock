@@ -1,6 +1,6 @@
 PODS:
   - boost (1.84.0)
-  - DojahKycSdkReactExpo (0.1.0):
+  - DojahKycSdkReactExpo (0.1.1):
     - DojahWidget
     - ExpoModulesCore
   - DojahWidget (1.0.2):
@@ -1998,12 +1998,12 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DojahWidget:
-    :commit: 745819e1c6c36c056798044337e7ca3a39628787
+    :commit: aa18022b1f136307fc4b3c9ce25c027546ed0f14
     :git: https://github.com/dojah-inc/sdk-swift.git
 
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
-  DojahKycSdkReactExpo: ba3ca7e26174bd17b1f789a216dbb4e78cdb0505
+  DojahKycSdkReactExpo: 794add45b80d4a160fa35ac53c88fe92b484e7fc
   DojahWidget: a89fe1aefb3dbb42f4886fa2d1e9977bf37b364d
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: 9f310f44bfedba09087042756802040e464323c0

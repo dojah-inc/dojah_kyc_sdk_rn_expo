@@ -16,12 +16,15 @@ export default function App() {
               console.log('launching Dojah KYC');
               const status = await DojahKycSdk.launch(
                 '67a31733f84e4cd6ffbcf06a', null, null, {
-                userData: {
-                  firstName: 'John',
-                  lastName: 'Doe',
-                  email: 'john.doe@example.com',
-                  dob: '1990-01-01'
-                },
+                  govId: { 
+                     passport: "https://nairametrics.com/wp-content/uploads/2013/11/nigeria-national-identity-smart-cards-combine-id-and-mastercard.jpg"
+                  },
+                // userData: {
+                //   firstName: 'John',
+                //   lastName: 'Doe',
+                //   email: 'john.doe@example.com',
+                //   dob: '1990-01-01'
+                // },
                 metadata: {
                   "user_id": "1234567890",
                 }
