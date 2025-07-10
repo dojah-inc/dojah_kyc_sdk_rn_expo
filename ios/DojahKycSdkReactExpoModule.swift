@@ -23,13 +23,10 @@ class DojahNavigationControllerDelegate: NSObject, UINavigationControllerDelegat
 
 public class DojahKycSdkReactExpoModule: Module {
     
-    var mPromise:Promise? = nil
-    
+    var mPromise: Promise?
     let navDelegate = DojahNavigationControllerDelegate()
- 
-    let navCtrl = UIApplication.shared.keyWindow?.rootViewController as? UINavigationController
-    
-    var prevController:UIViewController? = nil
+    var navCtrl: UINavigationController?
+    var prevController: UIViewController?
 
     required public init(appContext: AppContext) {
         super.init(appContext: appContext)
@@ -37,73 +34,93 @@ public class DojahKycSdkReactExpoModule: Module {
             print("onDidShow: \(vc)")
             //return result from DojahWidget once verification
             //is done,failed or cancel
-            if(!String(describing:vc).contains("DojahWidget")){
+            if !String(describing: vc).contains("DojahWidget") {
                 let vStatus = DojahWidgetSDK.getVerificationResultStatus()
-                let status = if(vStatus.isEmpty){  "closed"} else {vStatus}
+                let status = vStatus.isEmpty ? "closed" : vStatus
                 self.mPromise?.resolve(status)
                 self.prevController = nil
-            }else if(String(describing:vc).contains("DojahWidget.DJDisclaimer")
-                     && self.prevController != nil){
+            } else if String(describing: vc).contains("DojahWidget.DJDisclaimer")
+                     && self.prevController != nil {
                 self.navCtrl?.popToRootViewController(animated: false)
-            }else if(!String(describing:vc).contains("DojahWidget.SDKInitViewController")){
+            } else if !String(describing: vc).contains("DojahWidget.SDKInitViewController") {
                 self.prevController = vc
             }
         }
-        
-        if navCtrl != nil {
-            navCtrl!.delegate = navDelegate
-        }
     }
 
-  public func definition() -> ModuleDefinition {
+    public func definition() -> ModuleDefinition {
+        Name("DojahKycSdk")
+        Events("onChange")
 
-    Name("DojahKycSdk")
-
-    Events("onChange")
-
-    AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?,promise:Promise) in
-          mPromise = promise
-
-          let navController = navCtrl
-
-          print("nav ctrl: $\(String(describing: navController))")
-        
-    
-          if(navController == nil){
-              self.mPromise?.reject("002","failed to initialize, can't find navController")
-              return
-          }
-        
-        DispatchQueue.main.async {
-            do{
-                DojahWidgetSDK.initialize(
-                    widgetID: widgetId,
-                    referenceID: referenceId,
-                    emailAddress: email,
-                    extraUserData: extraData?.toExtraUserData(),
-                    navController: navController!)
-            }catch{
-                self.mPromise?.reject("001","failed to initialize")
+        AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?, promise: Promise) in
+            self.mPromise = promise
+            
+            // Get the navigation controller when needed, not during initialization
+            if self.navCtrl == nil {
+                DispatchQueue.main.async {
+                    if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+                        if let rootNav = window.rootViewController as? UINavigationController {
+                            self.navCtrl = rootNav
+                        } else if let rootVC = window.rootViewController {
+                            // If rootViewController isn't a nav controller, create one
+                            let navController = UINavigationController(rootViewController: rootVC)
+                            window.rootViewController = navController
+                            self.navCtrl = navController
+                        }
+                    }
+                    
+                    guard let navController = self.navCtrl else {
+                        self.mPromise?.reject("002", "failed to initialize, can't find navController")
+                        return
+                    }
+                    
+                    navController.delegate = self.navDelegate
+                    
+                    do {
+                        DojahWidgetSDK.initialize(
+                            widgetID: widgetId,
+                            referenceID: referenceId,
+                            emailAddress: email,
+                            extraUserData: extraData?.toExtraUserData(),
+                            navController: navController
+                        )
+                    } catch {
+                        self.mPromise?.reject("001", "failed to initialize")
+                    }
+                }
+            } else {
+                // If navCtrl already exists
+                DispatchQueue.main.async {
+                    guard let navController = self.navCtrl else {
+                        self.mPromise?.reject("002", "failed to initialize, can't find navController")
+                        return
+                    }
+                    
+                    do {
+                        DojahWidgetSDK.initialize(
+                            widgetID: widgetId,
+                            referenceID: referenceId,
+                            emailAddress: email,
+                            extraUserData: extraData?.toExtraUserData(),
+                            navController: navController
+                        )
+                    } catch {
+                        self.mPromise?.reject("001", "failed to initialize")
+                    }
+                }
             }
         }
-    }
 
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(DojahKycSdkReactExpoView.self) {
-      // Defines a setter for the `url` prop.
-      Prop("url") { (view: DojahKycSdkReactExpoView, url: URL) in
-        if view.webView.url != url {
-          view.webView.load(URLRequest(url: url))
+        View(DojahKycSdkReactExpoView.self) {
+            Prop("url") { (view: DojahKycSdkReactExpoView, url: URL) in
+                if view.webView.url != url {
+                    view.webView.load(URLRequest(url: url))
+                }
+            }
+            Events("onLoad")
         }
-      }
-
-      Events("onLoad")
     }
-  }
 }
-
-
 
 struct ExtraDataRecord : Record {
     @Field
