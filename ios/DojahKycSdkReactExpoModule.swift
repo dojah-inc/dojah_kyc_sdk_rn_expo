@@ -32,8 +32,6 @@ public class DojahKycSdkReactExpoModule: Module {
         super.init(appContext: appContext)
         navDelegate.setOnDidShow { vc in
             print("onDidShow: \(vc)")
-            //return result from DojahWidget once verification
-            //is done,failed or cancel
             if !String(describing: vc).contains("DojahWidget") {
                 let vStatus = DojahWidgetSDK.getVerificationResultStatus()
                 let status = vStatus.isEmpty ? "closed" : vStatus
@@ -55,59 +53,39 @@ public class DojahKycSdkReactExpoModule: Module {
         AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?, promise: Promise) in
             self.mPromise = promise
             
-            // Get the navigation controller when needed, not during initialization
-            if self.navCtrl == nil {
-                DispatchQueue.main.async {
-                    if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-                        if let rootNav = window.rootViewController as? UINavigationController {
-                            self.navCtrl = rootNav
-                        } else if let rootVC = window.rootViewController {
-                            // If rootViewController isn't a nav controller, create one
-                            let navController = UINavigationController(rootViewController: rootVC)
-                            window.rootViewController = navController
-                            self.navCtrl = navController
-                        }
-                    }
-                    
-                    guard let navController = self.navCtrl else {
-                        self.mPromise?.reject("002", "failed to initialize, can't find navController")
-                        return
-                    }
-                    
-                    navController.delegate = self.navDelegate
-                    
-                    do {
-                        DojahWidgetSDK.initialize(
-                            widgetID: widgetId,
-                            referenceID: referenceId,
-                            emailAddress: email,
-                            extraUserData: extraData?.toExtraUserData(),
-                            navController: navController
-                        )
-                    } catch {
-                        self.mPromise?.reject("001", "failed to initialize")
-                    }
+            DispatchQueue.main.async {
+                // Get the current key window
+                guard let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) else {
+                    self.mPromise?.reject("002", "No key window found")
+                    return
                 }
-            } else {
-                // If navCtrl already exists
-                DispatchQueue.main.async {
-                    guard let navController = self.navCtrl else {
-                        self.mPromise?.reject("002", "failed to initialize, can't find navController")
-                        return
-                    }
-                    
-                    do {
-                        DojahWidgetSDK.initialize(
-                            widgetID: widgetId,
-                            referenceID: referenceId,
-                            emailAddress: email,
-                            extraUserData: extraData?.toExtraUserData(),
-                            navController: navController
-                        )
-                    } catch {
-                        self.mPromise?.reject("001", "failed to initialize")
-                    }
+                
+                // If we already have a navigation controller, use it
+                if let existingNav = self.navCtrl {
+                    self.initializeDojahSDK(with: existingNav, widgetId: widgetId, referenceId: referenceId, email: email, extraData: extraData)
+                    return
                 }
+                
+                // If root is already a navigation controller
+                if let rootNav = window.rootViewController as? UINavigationController {
+                    self.navCtrl = rootNav
+                    self.initializeDojahSDK(with: rootNav, widgetId: widgetId, referenceId: referenceId, email: email, extraData: extraData)
+                    return
+                }
+                
+                // If root is not a navigation controller, create a new one
+                if let rootVC = window.rootViewController {
+                    // Create a new navigation controller with the root VC
+                    let navController = UINavigationController()
+                    navController.viewControllers = [rootVC]
+                    window.rootViewController = navController
+                    self.navCtrl = navController
+                    self.initializeDojahSDK(with: navController, widgetId: widgetId, referenceId: referenceId, email: email, extraData: extraData)
+                    return
+                }
+                
+                // If we still don't have a navigation controller
+                self.mPromise?.reject("002", "Failed to setup navigation controller")
             }
         }
 
@@ -120,7 +98,27 @@ public class DojahKycSdkReactExpoModule: Module {
             Events("onLoad")
         }
     }
+    
+    private func initializeDojahSDK(with navController: UINavigationController, 
+                                  widgetId: String, 
+                                  referenceId: String?, 
+                                  email: String?, 
+                                  extraData: ExtraDataRecord?) {
+        navController.delegate = self.navDelegate
+        do {
+            DojahWidgetSDK.initialize(
+                widgetID: widgetId,
+                referenceID: referenceId,
+                emailAddress: email,
+                extraUserData: extraData?.toExtraUserData(),
+                navController: navController
+            )
+        } catch {
+            self.mPromise?.reject("001", "failed to initialize")
+        }
+    }
 }
+
 
 struct ExtraDataRecord : Record {
     @Field
