@@ -1,19 +1,21 @@
 PODS:
   - boost (1.84.0)
-  - DojahKycSdkReactExpo (0.1.1):
+  - Clarity (3.4.0)
+  - DojahKycSdkReactExpo (0.1.2):
     - DojahWidget
     - ExpoModulesCore
-  - DojahWidget (1.0.2):
+  - DojahWidget (1.0.9):
+    - Clarity
     - GooglePlaces (~> 8.5.0)
     - HorizonCalendar (~> 1.16.0)
     - IQKeyboardManagerSwift (~> 7.1.1)
     - Kingfisher (~> 7.12.0)
-    - lottie-ios (~> 4.3.3)
+    - lottie-ios (~> 4.5.2)
     - RealmSwift (~> 10.52.2)
   - DoubleConversion (1.1.6)
   - EXConstants (17.1.6):
     - ExpoModulesCore
-  - Expo (53.0.9):
+  - Expo (53.0.25):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -48,7 +50,7 @@ PODS:
     - ExpoModulesCore
   - ExpoKeepAwake (14.1.4):
     - ExpoModulesCore
-  - ExpoModulesCore (2.3.13):
+  - ExpoModulesCore (2.5.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -84,7 +86,7 @@ PODS:
   - HorizonCalendar (1.16.0)
   - IQKeyboardManagerSwift (7.1.1)
   - Kingfisher (7.12.0)
-  - lottie-ios (4.3.4)
+  - lottie-ios (4.5.2)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1741,15 +1743,15 @@ PODS:
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
-  - DojahKycSdkReactExpo (from `../../ios`)
+  - DojahKycSdkReactExpo (from `../node_modules/dojah-kyc-sdk-react-expo/ios`)
   - DojahWidget (from `https://github.com/dojah-inc/sdk-swift.git`, branch `pod-package`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
-  - EXConstants (from `../node_modules/expo-constants/ios`)
+  - EXConstants (from `../../node_modules/expo-constants/ios`)
   - Expo (from `../node_modules/expo`)
-  - ExpoAsset (from `../node_modules/expo-asset/ios`)
-  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
-  - ExpoFont (from `../node_modules/expo-font/ios`)
-  - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - ExpoAsset (from `../../node_modules/expo-asset/ios`)
+  - ExpoFileSystem (from `../../node_modules/expo-file-system/ios`)
+  - ExpoFont (from `../../node_modules/expo-font/ios`)
+  - ExpoKeepAwake (from `../../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -1825,6 +1827,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - Clarity
     - GooglePlaces
     - HorizonCalendar
     - IQKeyboardManagerSwift
@@ -1838,24 +1841,24 @@ EXTERNAL SOURCES:
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DojahKycSdkReactExpo:
-    :path: "../../ios"
+    :path: "../node_modules/dojah-kyc-sdk-react-expo/ios"
   DojahWidget:
     :branch: pod-package
     :git: https://github.com/dojah-inc/sdk-swift.git
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXConstants:
-    :path: "../node_modules/expo-constants/ios"
+    :path: "../../node_modules/expo-constants/ios"
   Expo:
     :path: "../node_modules/expo"
   ExpoAsset:
-    :path: "../node_modules/expo-asset/ios"
+    :path: "../../node_modules/expo-asset/ios"
   ExpoFileSystem:
-    :path: "../node_modules/expo-file-system/ios"
+    :path: "../../node_modules/expo-file-system/ios"
   ExpoFont:
-    :path: "../node_modules/expo-font/ios"
+    :path: "../../node_modules/expo-font/ios"
   ExpoKeepAwake:
-    :path: "../node_modules/expo-keep-awake/ios"
+    :path: "../../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
   fast_float:
@@ -1998,21 +2001,22 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DojahWidget:
-    :commit: aa18022b1f136307fc4b3c9ce25c027546ed0f14
+    :commit: aff075348412192a28ccda247bc2372f666faa7a
     :git: https://github.com/dojah-inc/sdk-swift.git
 
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
-  DojahKycSdkReactExpo: 794add45b80d4a160fa35ac53c88fe92b484e7fc
-  DojahWidget: a89fe1aefb3dbb42f4886fa2d1e9977bf37b364d
+  Clarity: 9c3884d6304ae614e34e6a31f0ed4ac4ec862c7e
+  DojahKycSdkReactExpo: aefde460ce5a207f8c056cbcb086823ab1e86e96
+  DojahWidget: aac4a24949b55c476a8d9b83638b6c317dcc2f4a
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: 9f310f44bfedba09087042756802040e464323c0
-  Expo: a9fc723f6c8f673f0e7e036c9021772d3a1a0707
+  Expo: a9aaba7e05fb1445c5605b2b1be1904efa2aaaff
   ExpoAsset: 3bc9adb7dbbf27ae82c18ca97eb988a3ae7e73b1
   ExpoFileSystem: c36eb8155eb2381c83dda7dc210e3eec332368b6
   ExpoFont: abbb91a911eb961652c2b0a22eef801860425ed6
   ExpoKeepAwake: bf0811570c8da182bfb879169437d4de298376e7
-  ExpoModulesCore: 5d37821c36f3781dcd0ea9a393800c90eaa6259d
+  ExpoModulesCore: 00a1b5c73248465bd0b93f59f8538c4573dac579
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 84b955f7b4da8b895faf5946f73748267347c975
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
@@ -2022,7 +2026,7 @@ SPEC CHECKSUMS:
   HorizonCalendar: 90d7281cf1cd0cb3fae1d3e53f6f7fd24fda5a0e
   IQKeyboardManagerSwift: d7f3d3a562c237a0e7335e657cd598c452f57f1b
   Kingfisher: 53a10ea35051a436b5fb626ca2dd8f3144d755e9
-  lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
+  lottie-ios: 96784afc26ea031d3e2b6cae342a4b8915072489
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 83ffb90c23ee5cea353bd32008a7bca100908f8c
   RCTRequired: eb7c0aba998009f47a540bec9e9d69a54f68136e

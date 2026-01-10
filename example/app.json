@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dojah.dojahKycRnExpo.example",
+      "bundleIdentifier": "com.dojah.kyc.reactexpo.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app uses location services to provide a better experience.",
         "NSLocationAlwaysUsageDescription": "This app uses location services to provide a better experience.",
@@ -52,7 +52,8 @@
                 "git": "https://github.com/dojah-inc/sdk-swift.git",
                 "branch": "pod-package"
               }
-            ]
+            ],
+            "deploymentTarget": "15.1"
           }
         }
       ]

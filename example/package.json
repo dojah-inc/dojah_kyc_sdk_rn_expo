@@ -9,12 +9,12 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "dojah-kyc-sdk-react-expo": "/Users/village_square/node_project/dojah-kyc-sdk-react-expo",
+    "dojah-kyc-sdk-react-expo": "file:../dojah-kyc-sdk-react-expo-0.1.2.tgz",
     "expo": "~53.0.9",
+    "expo-build-properties": "~0.14.6",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.2",
-    "expo-build-properties": "~0.14.6"
+    "react-native": "0.79.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
