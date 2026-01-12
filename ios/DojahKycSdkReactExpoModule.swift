@@ -16,7 +16,7 @@ class SafeDojahNavigationController: UINavigationController {
         
         // Check if this view controller is already in the navigation stack
         if viewControllers.contains(where: { 
-            String(describing: type(of: $0)) == String(describing: type(of: viewControllerToPresent)) 
+            type(of: $0) == type(of: viewControllerToPresent)
         }) {
             print("⚠️ ViewController already in navigation stack: \(String(describing: type(of: viewControllerToPresent)))")
             completion?()
@@ -93,13 +93,8 @@ public class DojahKycSdkReactExpoModule: Module {
         presentationDelegate.setOnDidDismiss { [weak self] in
             guard let self = self else { return }
             print("🛑 Modal was dismissed manually")
-            let vStatus = DojahWidgetSDK.getVerificationResultStatus()
-            let status = vStatus.isEmpty ? "closed" : vStatus
-            self.mPromise?.resolve(status)
-            self.mPromise = nil
+            self.resolveSdkResult()
             self.dojahNavController = nil
-            self.isDojahActive = false
-            self.prevController = nil
         }
     }
     
@@ -189,13 +184,7 @@ public class DojahKycSdkReactExpoModule: Module {
                     if !vcName.contains("DojahWidget") {
                         if self.isDojahActive {
                             print("🚪 Not DojahWidget - resolving")
-                            let vStatus = DojahWidgetSDK.getVerificationResultStatus()
-                            let status = vStatus.isEmpty ? "closed" : vStatus
-                            self.mPromise?.resolve(status)
-                            self.mPromise = nil
-                            self.prevController = nil
-                            self.dismissDojahController()
-                            self.isDojahActive = false
+                            self.resolveSdkResult()
                         }
                         return
                     }
@@ -219,13 +208,7 @@ public class DojahKycSdkReactExpoModule: Module {
                         // Resolve if we've seen it before OR if we've progressed
                         if self.hasSeenSDKInit || self.prevController != nil {
                             print("📱 SDKInitViewController - resolving")
-                            let vStatus = DojahWidgetSDK.getVerificationResultStatus()
-                            let status = vStatus.isEmpty ? "closed" : vStatus
-                            self.mPromise?.resolve(status)
-                            self.mPromise = nil
-                            self.prevController = nil
-                            self.dismissDojahController()
-                            self.isDojahActive = false
+                            self.resolveSdkResult()
                         } else {
                             // First time seeing SDKInitViewController - allow to continue
                             print("📱 SDKInitViewController on initial launch - allowing to continue")
@@ -246,6 +229,7 @@ public class DojahKycSdkReactExpoModule: Module {
                             referenceID: referenceId,
                             emailAddress: email,
                             extraUserData: extraData?.toExtraUserData(),
+                            source: "ios_react_native_expo",
                             navController: dojahNavController
                         )
                         print("🎯 Dojah SDK initialized")
@@ -286,8 +270,6 @@ public class DojahKycSdkReactExpoModule: Module {
     }
 }
 
-// Keep all your Record structs here...
-// Keep all your Record structs here...
 
 // ============= KEEP ALL THESE STRUCTS =============
 
