@@ -38,6 +38,7 @@ local.properties
 android.iml
 android/app/libs
 android/keystores/debug.keystore
+keys/
 
 # Cocoapods
 #
@@ -59,3 +60,4 @@ yarn-error.log
 # Package builds
 *.tgz
 
+config.bat

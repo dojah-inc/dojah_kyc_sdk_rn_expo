@@ -1,10 +1,10 @@
 PODS:
   - boost (1.84.0)
   - Clarity (3.4.0)
-  - DojahKycSdkReactExpo (0.1.2):
+  - DojahKycSdkReactExpo (0.1.7):
     - DojahWidget
     - ExpoModulesCore
-  - DojahWidget (1.0.9):
+  - DojahWidget (1.1.1):
     - Clarity
     - GooglePlaces (~> 8.5.0)
     - HorizonCalendar (~> 1.16.0)
@@ -2001,14 +2001,14 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   DojahWidget:
-    :commit: aff075348412192a28ccda247bc2372f666faa7a
+    :commit: 664158f350ffdfe5180cd3441d0352b80ed2719f
     :git: https://github.com/dojah-inc/sdk-swift.git
 
 SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   Clarity: 9c3884d6304ae614e34e6a31f0ed4ac4ec862c7e
-  DojahKycSdkReactExpo: aefde460ce5a207f8c056cbcb086823ab1e86e96
-  DojahWidget: aac4a24949b55c476a8d9b83638b6c317dcc2f4a
+  DojahKycSdkReactExpo: 583b257953f74daa9cac3bcb84505d7f14f78f94
+  DojahWidget: e891e83b96713baea9c58872d4ff96601e84bc80
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: 9f310f44bfedba09087042756802040e464323c0
   Expo: a9aaba7e05fb1445c5605b2b1be1904efa2aaaff

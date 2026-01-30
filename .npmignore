@@ -11,4 +11,8 @@ __tests__
 /android/src/androidTest/
 /android/src/test/
 /android/build/
+/android/app/
+/android/.gradle/
+/ios/build/
 /example/
+/keys/

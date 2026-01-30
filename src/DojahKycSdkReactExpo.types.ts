@@ -6,10 +6,16 @@ export type OnLoadEventPayload = {
 
 export type DojahKycSdkReactExpoModuleEvents = {
   onChange: (params: ChangeEventPayload) => void;
+  onDebugLog: (params: DebugLogEventPayload) => void;
 };
 
 export type ChangeEventPayload = {
   value: string;
+};
+
+export type DebugLogEventPayload = {
+  message: string;
+  timestamp: number;
 };
 
 export type DojahKycSdkReactExpoViewProps = {

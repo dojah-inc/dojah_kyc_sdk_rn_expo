@@ -1,48 +1,54 @@
 import ExpoModulesCore
 import DojahWidget
 import UIKit
+import os.log
 
-// Custom NavigationController that prevents duplicate presentations
+// Custom NavigationController that prevents duplicate presentations at root level only
+// Allows SDK to present view controllers (camera, verification screens) within the navigation flow
 class SafeDojahNavigationController: UINavigationController {
-    private var isPresenting = false
+    private var isPresentingRoot = false
+    private var isCurrentlyPresenting = false
     
     override func present(_ viewControllerToPresent: UIViewController, animated: Bool, completion: (() -> Void)? = nil) {
-        // Check if we're already presenting something
-        if isPresenting {
-            print("⚠️ Already presenting, preventing duplicate: \(String(describing: type(of: viewControllerToPresent)))")
-            completion?()
-            return
-        }
+        // Safety check: Prevent duplicate presentations that could cause crashes
+        // But allow SDK to present view controllers within the navigation flow
         
-        // Check if this view controller is already in the navigation stack
-        if viewControllers.contains(where: { 
-            type(of: $0) == type(of: viewControllerToPresent)
-        }) {
-            print("⚠️ ViewController already in navigation stack: \(String(describing: type(of: viewControllerToPresent)))")
-            completion?()
-            return
-        }
-        
-        // Check if we're already presenting something
-        if presentedViewController != nil {
-            print("⚠️ NavigationController already has a presentedViewController")
-            completion?()
-            return
+        // If we're already presenting something, check if it's a duplicate
+        if isCurrentlyPresenting {
+            // Check if this is the same view controller type being presented again
+            if let currentPresented = presentedViewController,
+               type(of: currentPresented) == type(of: viewControllerToPresent) {
+                print("⚠️ Duplicate presentation detected (same type), preventing crash: \(String(describing: type(of: viewControllerToPresent)))")
+                completion?()
+                return
+            }
+            // If it's a different type, allow it (SDK might be presenting camera/verification screen)
+            // But log it for debugging
+            print("⚠️ Presenting new VC while another is presented: \(String(describing: type(of: viewControllerToPresent)))")
         }
         
         // Mark as presenting
-        isPresenting = true
+        isCurrentlyPresenting = true
         
         // Call super to actually present
         super.present(viewControllerToPresent, animated: animated) { [weak self] in
-            self?.isPresenting = false
+            self?.isCurrentlyPresenting = false
             completion?()
         }
     }
     
     override func dismiss(animated: Bool, completion: (() -> Void)? = nil) {
-        isPresenting = false
-        super.dismiss(animated: animated, completion: completion)
+        isPresentingRoot = false
+        isCurrentlyPresenting = false
+        super.dismiss(animated: animated) { [weak self] in
+            self?.isCurrentlyPresenting = false
+            completion?()
+        }
+    }
+    
+    // Mark when root is being presented
+    func markRootPresenting() {
+        isPresentingRoot = true
     }
 }
 
@@ -85,6 +91,24 @@ public class DojahKycSdkReactExpoModule: Module {
     private var dojahNavController: SafeDojahNavigationController?
     private var prevController: UIViewController? // Track previous controller for DJDisclaimer handling
     private var hasSeenSDKInit = false // Track if we've seen SDKInitViewController before
+    private var navigationCheckTimer: Timer? // Timer to check navigation stack changes
+    private var formScreenStartTime: Date? // Track when we entered form screen
+    private var formScreenStuckTimer: Timer? // Timer to detect stuck form screen
+    
+    // Debug mode flag - set to false to disable debug logs
+    private let debugMode = false
+    
+    // Helper to log to both console and React Native (only if debug mode is enabled)
+    private func debugLog(_ message: String) {
+        guard debugMode else { return }
+        print(message)
+        os_log("%{public}@", log: OSLog.default, type: .debug, message)
+        // Send to React Native via event
+        sendEvent("onDebugLog", [
+            "message": message,
+            "timestamp": Date().timeIntervalSince1970
+        ])
+    }
     
     required public init(appContext: AppContext) {
         super.init(appContext: appContext)
@@ -134,6 +158,12 @@ public class DojahKycSdkReactExpoModule: Module {
     
     private func dismissDojahController() {
         DispatchQueue.main.async { [weak self] in
+            // Stop all timers
+            self?.navigationCheckTimer?.invalidate()
+            self?.navigationCheckTimer = nil
+            self?.formScreenStuckTimer?.invalidate()
+            self?.formScreenStuckTimer = nil
+            
             self?.dojahNavController?.dismiss(animated: true) {
                 self?.dojahNavController = nil
             }
@@ -142,7 +172,7 @@ public class DojahKycSdkReactExpoModule: Module {
 
     public func definition() -> ModuleDefinition {
         Name("DojahKycSdk")
-        Events("onChange")
+        Events("onChange", "onDebugLog")
 
         AsyncFunction("launch") { (widgetId: String, referenceId: String?, email: String?, extraData: ExtraDataRecord?, promise: Promise) in
             self.mPromise = promise
@@ -165,11 +195,63 @@ public class DojahKycSdkReactExpoModule: Module {
                 dojahNavController.modalPresentationStyle = .fullScreen
                 self.dojahNavController = dojahNavController
                 
+                // Mark that we're presenting the root navigation controller
+                dojahNavController.markRootPresenting()
+                
                 // Set delegate BEFORE presenting (important!)
                 dojahNavController.delegate = self.navDelegate
                 
                 // Detect modal dismissal (for cancel)
                 dojahNavController.presentationController?.delegate = self.presentationDelegate
+                
+                // DEBUG: Add observer to watch navigation stack changes
+                var previousViewControllers: [UIViewController] = []
+                let checkNavigationStack: () -> Void = { [weak self] in
+                    guard let self = self, let navController = self.dojahNavController else { return }
+                    let currentVCs = navController.viewControllers
+                    
+                    // Initialize previousViewControllers on first check
+                    if previousViewControllers.isEmpty && !currentVCs.isEmpty {
+                        previousViewControllers = currentVCs
+                        let message = "🔍 Initial navigation stack captured: \(currentVCs.count) VCs"
+                        self.debugLog(message)
+                        currentVCs.forEach { vc in
+                            self.debugLog("   📱 VC: \(String(describing: vc))")
+                        }
+                        return
+                    }
+                    
+                    // Check if stack changed
+                    if currentVCs.count != previousViewControllers.count {
+                        self.debugLog("🔍 ⚠️ NAVIGATION STACK COUNT CHANGED: \(previousViewControllers.count) -> \(currentVCs.count)")
+                        self.debugLog("   Previous VCs:")
+                        previousViewControllers.forEach { vc in
+                            self.debugLog("     - \(String(describing: vc))")
+                        }
+                        self.debugLog("   Current VCs:")
+                        currentVCs.forEach { vc in
+                            self.debugLog("     - \(String(describing: vc))")
+                        }
+                        previousViewControllers = currentVCs
+                    } else if currentVCs.count > 0 {
+                        // Check if top VC changed (same count but different VC)
+                        let currentTop = currentVCs.last!
+                        let previousTop = previousViewControllers.last
+                        if previousTop != nil && currentTop !== previousTop! {
+                            self.debugLog("🔍 ⚠️ TOP VC CHANGED (delegate NOT called!):")
+                            self.debugLog("     Previous: \(String(describing: previousTop!))")
+                            self.debugLog("     Current: \(String(describing: currentTop))")
+                            previousViewControllers = currentVCs
+                        }
+                    }
+                }
+                
+                // Check navigation stack every 0.5 seconds (only if debug mode is enabled)
+                if self.debugMode {
+                    self.navigationCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+                        checkNavigationStack()
+                    }
+                }
                 
                 // Track Dojah flow - simplified like original but with Flutter closing logic
                 self.navDelegate.setOnDidShow { [weak self] vc in
@@ -177,13 +259,41 @@ public class DojahKycSdkReactExpoModule: Module {
                     
                     // Use String(describing: vc) like the original code
                     let vcName = String(describing: vc)
-                    print("🔄 onDidShow: \(vcName)")
+                    self.debugLog("🔄 onDidShow: \(vcName)")
+                    
+                    // Track when we're on the form screen (GovernmentDataViewController)
+                    if vcName.contains("GovernmentDataViewController") {
+                        self.formScreenStartTime = Date()
+                        self.debugLog("📝 On form screen (GovernmentDataViewController) - waiting for submission...")
+                        
+                        // Set up timer to detect if form screen is stuck (no navigation after 10 seconds)
+                        self.formScreenStuckTimer?.invalidate()
+                        self.formScreenStuckTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
+                            guard let self = self else { return }
+                            // Check if we're still on the form screen
+                            if let navController = self.dojahNavController,
+                               let topVC = navController.viewControllers.last,
+                               String(describing: topVC).contains("GovernmentDataViewController") {
+                                self.debugLog("⚠️ ⚠️ ⚠️ FORM SCREEN STUCK - No navigation after 10 seconds! Possible submission failure.")
+                                self.debugLog("   This usually means the form submission failed silently.")
+                            }
+                        }
+                    } else {
+                        // We navigated away from form screen - clear timer
+                        if self.formScreenStartTime != nil {
+                            let timeOnForm = Date().timeIntervalSince(self.formScreenStartTime!)
+                            self.debugLog("⏱️ Time spent on form screen: \(String(format: "%.1f", timeOnForm)) seconds")
+                            self.formScreenStartTime = nil
+                        }
+                        self.formScreenStuckTimer?.invalidate()
+                        self.formScreenStuckTimer = nil
+                    }
                     
                     // Match original + Flutter logic:
                     // 1. If not DojahWidget, resolve (but only if we were in Dojah)
                     if !vcName.contains("DojahWidget") {
                         if self.isDojahActive {
-                            print("🚪 Not DojahWidget - resolving")
+                            self.debugLog("🚪 Not DojahWidget - resolving")
                             self.resolveSdkResult()
                         }
                         return
@@ -207,13 +317,18 @@ public class DojahKycSdkReactExpoModule: Module {
                         // 4. SDKInitViewController - resolve (matches Flutter's "else" case)
                         // Resolve if we've seen it before OR if we've progressed
                         if self.hasSeenSDKInit || self.prevController != nil {
-                            print("📱 SDKInitViewController - resolving")
+                            self.debugLog("📱 SDKInitViewController - resolving (flow completed)")
                             self.resolveSdkResult()
                         } else {
                             // First time seeing SDKInitViewController - allow to continue
-                            print("📱 SDKInitViewController on initial launch - allowing to continue")
+                            self.debugLog("📱 SDKInitViewController on initial launch - allowing to continue")
                             self.hasSeenSDKInit = true
                         }
+                    }
+                    
+                    // Log successful navigation from form screen
+                    if vcName.contains("FeedbackViewController") {
+                        self.debugLog("✅ Successfully navigated from form to feedback screen!")
                     }
                 }
                 
@@ -232,7 +347,13 @@ public class DojahKycSdkReactExpoModule: Module {
                             source: "ios_react_native_expo",
                             navController: dojahNavController
                         )
-                        print("🎯 Dojah SDK initialized")
+                        self.debugLog("🎯 Dojah SDK initialized")
+                        
+                        // DEBUG: Log initial navigation state
+                        self.debugLog("🔍 Initial navigation stack count: \(dojahNavController.viewControllers.count)")
+                        dojahNavController.viewControllers.forEach { vc in
+                            self.debugLog("   📱 Initial VC: \(String(describing: vc))")
+                        }
                     }
                 }
             }

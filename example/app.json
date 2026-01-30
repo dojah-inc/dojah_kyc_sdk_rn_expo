@@ -22,7 +22,8 @@
         "NSPhotoLibraryUsageDescription": "This app uses the photo library to provide a better experience.",
         "NSCameraUsageDescription": "This app uses the camera to provide a better experience.",
         "NSMicrophoneUsageDescription": "This app uses the microphone to provide a better experience."
-      }
+      },
+      "appleTeamId": "F7VPZ364CD"
     },
     "android": {
       "adaptiveIcon": {

@@ -1,6 +1,6 @@
 import { useEvent } from "expo";
 import DojahKycSdk from "dojah-kyc-sdk-react-expo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   SafeAreaView,
   ScrollView,
