@@ -6,6 +6,7 @@ import java.net.URL
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
+import com.dojah.kyc_sdk_kotlin.DOJAH_CLOSED_RESULT
 import com.dojah.kyc_sdk_kotlin.DOJAH_RESULT_KEY
 import com.dojah.kyc_sdk_kotlin.domain.ExtraUserData
 import com.dojah.kyc_sdk_kotlin.DojahSdk
@@ -69,11 +70,20 @@ class DojahKycSdkReactExpoModule : Module() {
             val resultCode = payload.resultCode
             val data = payload.data
             if (requestCode == BACKWARD_CALL_REQUEST_CODE) {
-                if (resultCode == Activity.RESULT_OK) {
-                    val result = data?.getStringExtra(DOJAH_RESULT_KEY)
-                    mPromise?.resolve(result)
-                } else {
-                    mPromise?.reject(CodedException("Activity did not return OK"))
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        val raw = data?.getStringExtra(DOJAH_RESULT_KEY)
+                        // SplashActivity can forward a null Intent; treat as user-dismissed.
+                        val result = if (raw.isNullOrBlank()) DOJAH_CLOSED_RESULT else raw
+                        mPromise?.resolve(result)
+                    }
+                    Activity.RESULT_CANCELED -> {
+                        // Back / system cancel before SDK set a result
+                        mPromise?.resolve(DOJAH_CLOSED_RESULT)
+                    }
+                    else -> {
+                        mPromise?.reject(CodedException("Activity did not return OK"))
+                    }
                 }
                 mPromise = null
             }

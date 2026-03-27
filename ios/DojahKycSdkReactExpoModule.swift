@@ -117,14 +117,22 @@ public class DojahKycSdkReactExpoModule: Module {
         presentationDelegate.setOnDidDismiss { [weak self] in
             guard let self = self else { return }
             print("🛑 Modal was dismissed manually")
-            self.resolveSdkResult()
+            // User dismissed the sheet — do not trust getVerificationResultStatus() (can be stale, e.g. "approved")
+            self.resolveSdkResult(statusOverride: "closed")
             self.dojahNavController = nil
         }
     }
     
-    private func resolveSdkResult() {
-        let vStatus = DojahWidgetSDK.getVerificationResultStatus()
-        let status = vStatus.isEmpty ? "closed" : vStatus
+    /// - Parameter statusOverride: When set (e.g. user closed the flow), use this instead of `getVerificationResultStatus()`,
+    ///   which can retain a previous session value such as "approved" after the user dismisses.
+    private func resolveSdkResult(statusOverride: String? = nil) {
+        let status: String
+        if let override = statusOverride {
+            status = override
+        } else {
+            let vStatus = DojahWidgetSDK.getVerificationResultStatus()
+            status = vStatus.isEmpty ? "closed" : vStatus
+        }
         
         print("📊 Resolving SDK result: \(status)")
         
@@ -317,8 +325,9 @@ public class DojahKycSdkReactExpoModule: Module {
                         // 4. SDKInitViewController - resolve (matches Flutter's "else" case)
                         // Resolve if we've seen it before OR if we've progressed
                         if self.hasSeenSDKInit || self.prevController != nil {
-                            self.debugLog("📱 SDKInitViewController - resolving (flow completed)")
-                            self.resolveSdkResult()
+                            self.debugLog("📱 SDKInitViewController - resolving (user exit / close; avoid stale verification status)")
+                            // Second pass at SDK init or return after progress — usually dismiss/close, not a completed check
+                            self.resolveSdkResult(statusOverride: "closed")
                         } else {
                             // First time seeing SDKInitViewController - allow to continue
                             self.debugLog("📱 SDKInitViewController on initial launch - allowing to continue")
@@ -367,10 +376,7 @@ public class DojahKycSdkReactExpoModule: Module {
                 return
             }
             
-            let vStatus = DojahWidgetSDK.getVerificationResultStatus()
-            let status = vStatus.isEmpty ? "cancelled" : vStatus
-            
-            self.mPromise?.resolve(status)
+            self.mPromise?.resolve("closed")
             self.mPromise = nil
             self.prevController = nil
             
