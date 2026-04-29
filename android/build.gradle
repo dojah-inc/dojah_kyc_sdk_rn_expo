@@ -50,7 +50,6 @@ repositories {
 
 
 dependencies {
-  // implementation 'com.github.dojah-inc:sdk-kotlin:v0.0.1-dev'
-  // implementation 'com.github.dojah-inc:sdk-kotlin:v0.0.4-dev'
-  implementation 'com.github.dojah-inc:sdk-kotlin:v0.2.3'
+
+  implementation 'com.github.dojah-inc:sdk-kotlin:v0.2.7'
 }
