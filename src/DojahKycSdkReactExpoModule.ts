@@ -9,6 +9,8 @@ declare class DojahKycSdk extends NativeModule<DojahKycSdkReactExpoModuleEvents>
     email?: string | null,
     extraData?: Record<string, any> | null
   ): Promise<string>;
+  close(): Promise<string>;
+  restoreInteractions(): Promise<string>;
 }
 
 // This call loads the native module object from the JSI.

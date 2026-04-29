@@ -94,6 +94,7 @@ public class DojahKycSdkReactExpoModule: Module {
     private var navigationCheckTimer: Timer? // Timer to check navigation stack changes
     private var formScreenStartTime: Date? // Track when we entered form screen
     private var formScreenStuckTimer: Timer? // Timer to detect stuck form screen
+    private var preDojahGestureRecognizerIds = Set<ObjectIdentifier>()
     
     // Debug mode flag - set to false to disable debug logs
     private let debugMode = false
@@ -136,18 +137,20 @@ public class DojahKycSdkReactExpoModule: Module {
         
         print("📊 Resolving SDK result: \(status)")
         
-        // Resolve promise first
-        self.mPromise?.resolve(status)
+        let promise = self.mPromise
         self.mPromise = nil
         
         // Clear state
         self.prevController = nil
         
-        // Dismiss the navigation controller
-        self.dismissDojahController()
-        
-        // Reset flag
-        self.isDojahActive = false
+        // Dismiss the navigation controller before resolving JS. If JS routes
+        // while the full-screen Dojah controller is still being removed, iOS can
+        // leave a native view in the touch path and React pressables stop
+        // receiving taps until the app is killed.
+        self.dismissDojahController { [weak self] in
+            self?.isDojahActive = false
+            promise?.resolve(status)
+        }
     }
     
     private func getTopViewController() -> UIViewController? {
@@ -164,7 +167,7 @@ public class DojahKycSdkReactExpoModule: Module {
         return topViewController
     }
     
-    private func dismissDojahController() {
+    private func dismissDojahController(completion: (() -> Void)? = nil) {
         DispatchQueue.main.async { [weak self] in
             // Stop all timers
             self?.navigationCheckTimer?.invalidate()
@@ -172,9 +175,429 @@ public class DojahKycSdkReactExpoModule: Module {
             self?.formScreenStuckTimer?.invalidate()
             self?.formScreenStuckTimer = nil
             
-            self?.dojahNavController?.dismiss(animated: true) {
-                self?.dojahNavController = nil
+            guard let self = self else {
+                completion?()
+                return
             }
+            
+            guard let navController = self.dojahNavController else {
+                self.finishDojahDismissal(nil, completion: completion)
+                return
+            }
+            
+            guard navController.presentingViewController != nil ||
+                    navController.presentedViewController != nil else {
+                self.finishDojahDismissal(navController, completion: completion)
+                return
+            }
+            
+            navController.dismiss(animated: true) { [weak self] in
+                self?.finishDojahDismissal(navController, completion: completion)
+            }
+        }
+    }
+
+    private func finishDojahDismissal(_ navController: SafeDojahNavigationController?, completion: (() -> Void)? = nil) {
+        navController?.view.removeFromSuperview()
+        navController?.removeFromParent()
+        self.dojahNavController = nil
+        self.removeGestureRecognizersAddedByDojah()
+        self.removeReactSurfaceProxyGestureRecognizers(context: "finishDojahDismissal")
+        self.neutralizeTouchCancellingNavigationRecognizers()
+        self.resetAllGestureRecognizers()
+        self.resetReactSurfaceTouchHandlersRepeatedly(context: "finishDojahDismissal")
+        self.restoreAppInteractions()
+        completion?()
+    }
+
+    private func snapshotGestureRecognizersBeforeDojah() {
+        self.preDojahGestureRecognizerIds = self.collectGestureRecognizerIds()
+        print("🧭 Dojah gesture snapshot count: \(self.preDojahGestureRecognizerIds.count)")
+    }
+
+    private func collectGestureRecognizerIds() -> Set<ObjectIdentifier> {
+        var ids = Set<ObjectIdentifier>()
+
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+
+            for window in windowScene.windows {
+                self.collectGestureRecognizerIds(from: window, into: &ids)
+            }
+        }
+
+        return ids
+    }
+
+    private func collectGestureRecognizerIds(from view: UIView, into ids: inout Set<ObjectIdentifier>) {
+        for recognizer in view.gestureRecognizers ?? [] {
+            ids.insert(ObjectIdentifier(recognizer))
+        }
+
+        for subview in view.subviews {
+            self.collectGestureRecognizerIds(from: subview, into: &ids)
+        }
+    }
+
+    private func removeGestureRecognizersAddedByDojah() {
+        guard !self.preDojahGestureRecognizerIds.isEmpty else { return }
+
+        var removedCount = 0
+
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+
+            for window in windowScene.windows {
+                removedCount += self.removeGestureRecognizersAddedByDojah(from: window)
+            }
+        }
+
+        print("🧹 Removed \(removedCount) gesture recognizers added during Dojah")
+        self.preDojahGestureRecognizerIds.removeAll()
+    }
+
+    private func removeGestureRecognizersAddedByDojah(from view: UIView) -> Int {
+        var removedCount = 0
+
+        for recognizer in view.gestureRecognizers ?? [] {
+            if !self.preDojahGestureRecognizerIds.contains(ObjectIdentifier(recognizer)) {
+                view.removeGestureRecognizer(recognizer)
+                removedCount += 1
+            }
+        }
+
+        for subview in view.subviews {
+            removedCount += self.removeGestureRecognizersAddedByDojah(from: subview)
+        }
+
+        return removedCount
+    }
+
+    private func restoreAppInteractions() {
+        DispatchQueue.main.async {
+            let application = UIApplication.shared
+            var safetyCount = 0
+
+            while application.isIgnoringInteractionEvents && safetyCount < 8 {
+                application.endIgnoringInteractionEvents()
+                safetyCount += 1
+            }
+
+            for scene in application.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+
+                for window in windowScene.windows {
+                    window.isUserInteractionEnabled = true
+                    window.rootViewController?.view.isUserInteractionEnabled = true
+                }
+            }
+        }
+    }
+
+    private func shouldNeutralizeNavigationRecognizer(_ recognizer: UIGestureRecognizer) -> Bool {
+        let recognizerName = String(describing: type(of: recognizer))
+        return recognizerName == "RNSScreenEdgeGestureRecognizer" ||
+            recognizerName == "RNSPanGestureRecognizer" ||
+            recognizerName == "_UIParallaxTransitionPanGestureRecognizer"
+    }
+
+    private func shouldResetReactSurfaceTouchRecognizer(_ recognizer: UIGestureRecognizer) -> Bool {
+        return String(describing: type(of: recognizer)) == "RCTSurfaceTouchHandler"
+    }
+
+    private func removeReactSurfaceProxyGestureRecognizers(context: String) {
+        DispatchQueue.main.async {
+            var removedCount = 0
+
+            for scene in UIApplication.shared.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+
+                for window in windowScene.windows {
+                    removedCount += self.removeReactSurfaceProxyGestureRecognizers(from: window)
+                }
+            }
+
+            print("🧹 Removed \(removedCount) React surface proxy recognizers after Dojah (\(context))")
+        }
+    }
+
+    private func removeReactSurfaceProxyGestureRecognizers(from view: UIView) -> Int {
+        var removedCount = 0
+        let viewName = String(describing: type(of: view))
+
+        if viewName == "RCTSurfaceHostingProxyRootView" {
+            for recognizer in view.gestureRecognizers ?? [] {
+                view.removeGestureRecognizer(recognizer)
+                removedCount += 1
+            }
+        }
+
+        for subview in view.subviews {
+            removedCount += self.removeReactSurfaceProxyGestureRecognizers(from: subview)
+        }
+
+        return removedCount
+    }
+
+    private func neutralizeTouchCancellingNavigationRecognizers() {
+        DispatchQueue.main.async {
+            var neutralizedCount = 0
+
+            for scene in UIApplication.shared.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+
+                for window in windowScene.windows {
+                    neutralizedCount += self.neutralizeTouchCancellingNavigationRecognizers(from: window)
+                }
+            }
+
+            print("🧭 Neutralized \(neutralizedCount) touch-cancelling navigation recognizers after Dojah")
+        }
+    }
+
+    private func neutralizeTouchCancellingNavigationRecognizers(from view: UIView) -> Int {
+        var neutralizedCount = 0
+
+        for recognizer in view.gestureRecognizers ?? [] {
+            if self.shouldNeutralizeNavigationRecognizer(recognizer) {
+                recognizer.cancelsTouchesInView = false
+                recognizer.delaysTouchesBegan = false
+                recognizer.delaysTouchesEnded = false
+                recognizer.requiresExclusiveTouchType = false
+                recognizer.isEnabled = false
+                neutralizedCount += 1
+            }
+        }
+
+        for subview in view.subviews {
+            neutralizedCount += self.neutralizeTouchCancellingNavigationRecognizers(from: subview)
+        }
+
+        return neutralizedCount
+    }
+
+    private func resetAllGestureRecognizers() {
+        DispatchQueue.main.async {
+            var resetCount = 0
+
+            for scene in UIApplication.shared.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+
+                for window in windowScene.windows {
+                    resetCount += self.resetGestureRecognizers(from: window)
+                }
+            }
+
+            print("🔁 Reset \(resetCount) gesture recognizers after Dojah")
+        }
+    }
+
+    private func resetGestureRecognizers(from view: UIView) -> Int {
+        var resetCount = 0
+
+        for recognizer in view.gestureRecognizers ?? [] {
+            if self.shouldNeutralizeNavigationRecognizer(recognizer) {
+                recognizer.isEnabled = false
+            } else {
+                recognizer.isEnabled = false
+                recognizer.isEnabled = true
+            }
+            resetCount += 1
+        }
+
+        for subview in view.subviews {
+            resetCount += self.resetGestureRecognizers(from: subview)
+        }
+
+        return resetCount
+    }
+
+    private func resetReactSurfaceTouchHandlersRepeatedly(context: String) {
+        self.removeReactSurfaceProxyGestureRecognizers(context: "\(context).now")
+        self.reattachAllReactSurfaceViews(context: "\(context).now")
+        self.resetReactSurfaceTouchHandlers(context: "\(context).now")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            self?.removeReactSurfaceProxyGestureRecognizers(context: "\(context).50ms")
+            self?.reattachAllReactSurfaceViews(context: "\(context).50ms")
+            self?.resetReactSurfaceTouchHandlers(context: "\(context).50ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            self?.removeReactSurfaceProxyGestureRecognizers(context: "\(context).250ms")
+            self?.reattachAllReactSurfaceViews(context: "\(context).250ms")
+            self?.resetReactSurfaceTouchHandlers(context: "\(context).250ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.removeReactSurfaceProxyGestureRecognizers(context: "\(context).500ms")
+            self?.reattachAllReactSurfaceViews(context: "\(context).500ms")
+            self?.resetReactSurfaceTouchHandlers(context: "\(context).500ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.removeReactSurfaceProxyGestureRecognizers(context: "\(context).1000ms")
+            self?.reattachAllReactSurfaceViews(context: "\(context).1000ms")
+            self?.resetReactSurfaceTouchHandlers(context: "\(context).1000ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.removeReactSurfaceProxyGestureRecognizers(context: "\(context).2000ms")
+            self?.reattachAllReactSurfaceViews(context: "\(context).2000ms")
+            self?.resetReactSurfaceTouchHandlers(context: "\(context).2000ms")
+        }
+    }
+
+    private func resetReactSurfaceTouchHandlers(context: String) {
+        DispatchQueue.main.async {
+            var resetCount = 0
+
+            for scene in UIApplication.shared.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+
+                for window in windowScene.windows {
+                    resetCount += self.resetReactSurfaceTouchHandlers(from: window)
+                }
+            }
+
+            print("🧼 Reset \(resetCount) React surface touch handlers after Dojah (\(context))")
+        }
+    }
+
+    private func resetReactSurfaceTouchHandlers(from view: UIView) -> Int {
+        var resetCount = 0
+        let viewName = String(describing: type(of: view))
+
+        for recognizer in view.gestureRecognizers ?? [] {
+            if self.shouldResetReactSurfaceTouchRecognizer(recognizer) {
+                self.forceResetReactSurfaceTouchRecognizer(recognizer, on: view)
+                resetCount += 1
+            } else if viewName == "RCTSurfaceHostingProxyRootView" {
+                view.removeGestureRecognizer(recognizer)
+                resetCount += 1
+            }
+        }
+
+        for subview in view.subviews {
+            resetCount += self.resetReactSurfaceTouchHandlers(from: subview)
+        }
+
+        return resetCount
+    }
+
+    private func forceResetReactSurfaceTouchRecognizer(_ recognizer: UIGestureRecognizer, on view: UIView) {
+        let shouldReattachSurfaceView = recognizer.state == .failed || recognizer.state == .cancelled
+
+        recognizer.cancelsTouchesInView = false
+        recognizer.delaysTouchesBegan = false
+        recognizer.delaysTouchesEnded = false
+        recognizer.requiresExclusiveTouchType = false
+
+        recognizer.isEnabled = false
+        recognizer.reset()
+        view.removeGestureRecognizer(recognizer)
+        view.addGestureRecognizer(recognizer)
+        recognizer.reset()
+        recognizer.isEnabled = true
+
+        DispatchQueue.main.async {
+            recognizer.reset()
+            recognizer.isEnabled = false
+            recognizer.isEnabled = true
+        }
+
+        self.scheduleReactSurfaceViewReattach(view, reason: shouldReattachSurfaceView ? "stuck" : "reset")
+    }
+
+    private func reattachAllReactSurfaceViews(context: String) {
+        DispatchQueue.main.async {
+            var reattachedCount = 0
+
+            for scene in UIApplication.shared.connectedScenes {
+                guard let windowScene = scene as? UIWindowScene else { continue }
+
+                for window in windowScene.windows {
+                    reattachedCount += self.reattachReactSurfaceViews(from: window, reason: context)
+                }
+            }
+
+            print("🧼 Reattached \(reattachedCount) React surface views after Dojah (\(context))")
+        }
+    }
+
+    private func reattachReactSurfaceViews(from view: UIView, reason: String) -> Int {
+        var reattachedCount = 0
+
+        if String(describing: type(of: view)) == "RCTSurfaceView" {
+            self.reattachReactSurfaceView(view, reason: reason)
+            reattachedCount += 1
+        }
+
+        for subview in view.subviews {
+            reattachedCount += self.reattachReactSurfaceViews(from: subview, reason: reason)
+        }
+
+        return reattachedCount
+    }
+
+    private func scheduleReactSurfaceViewReattach(_ view: UIView, reason: String) {
+        DispatchQueue.main.async { [weak view] in
+            guard let view = view else { return }
+            self.reattachReactSurfaceView(view, reason: "\(reason).now")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak view] in
+            guard let view = view else { return }
+            self.reattachReactSurfaceView(view, reason: "\(reason).100ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak view] in
+            guard let view = view else { return }
+            self.reattachReactSurfaceView(view, reason: "\(reason).250ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak view] in
+            guard let view = view else { return }
+            self.reattachReactSurfaceView(view, reason: "\(reason).500ms")
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak view] in
+            guard let view = view else { return }
+            self.reattachReactSurfaceView(view, reason: "\(reason).1000ms")
+        }
+    }
+
+    private func reattachReactSurfaceView(_ view: UIView, reason: String) {
+        guard String(describing: type(of: view)) == "RCTSurfaceView",
+              let superview = view.superview else {
+            return
+        }
+
+        let currentIndex = superview.subviews.firstIndex(of: view) ?? superview.subviews.count
+        view.removeFromSuperview()
+        superview.insertSubview(view, at: min(currentIndex, superview.subviews.count))
+        view.isUserInteractionEnabled = true
+        superview.isUserInteractionEnabled = true
+        view.setNeedsLayout()
+        superview.setNeedsLayout()
+        self.restoreReactSurfaceAncestorInteractions(from: superview)
+        print("🧼 Reattached React surface view after touch handler reset (\(reason))")
+    }
+
+    private func restoreReactSurfaceAncestorInteractions(from view: UIView) {
+        var current: UIView? = view
+
+        while let candidate = current {
+            let viewName = String(describing: type(of: candidate))
+            if viewName == "RCTSurfaceView" ||
+                viewName == "RCTRootComponentView" ||
+                viewName == "RCTSurfaceHostingProxyRootView" ||
+                viewName == "RCTViewComponentView" ||
+                viewName == "RNCSafeAreaProviderComponentView" {
+                candidate.isUserInteractionEnabled = true
+                candidate.setNeedsLayout()
+            }
+            current = candidate.superview
         }
     }
 
@@ -197,6 +620,7 @@ public class DojahKycSdkReactExpoModule: Module {
                 self.prevController = nil
                 self.isDojahActive = false
                 self.hasSeenSDKInit = false
+                self.snapshotGestureRecognizersBeforeDojah()
                 
                 // Create safe navigation controller for Dojah (prevents duplicate presentations)
                 let dojahNavController = SafeDojahNavigationController()
@@ -368,6 +792,13 @@ public class DojahKycSdkReactExpoModule: Module {
             }
         }
 
+        AsyncFunction("restoreInteractions") { [weak self] (promise: Promise) in
+            self?.restoreAppInteractions()
+            self?.neutralizeTouchCancellingNavigationRecognizers()
+            self?.resetReactSurfaceTouchHandlersRepeatedly(context: "restoreInteractions")
+            promise.resolve("restored")
+        }
+
         AsyncFunction("close") { [weak self] (promise: Promise) in
             print("🛑 Manual close requested")
             
@@ -376,14 +807,16 @@ public class DojahKycSdkReactExpoModule: Module {
                 return
             }
             
-            self.mPromise?.resolve("closed")
+            let launchPromise = self.mPromise
             self.mPromise = nil
             self.prevController = nil
             
-            self.dismissDojahController()
-            self.isDojahActive = false
-            
-            promise.resolve("closed")
+            self.dismissDojahController { [weak self] in
+                self?.isDojahActive = false
+                self?.resetReactSurfaceTouchHandlersRepeatedly(context: "close")
+                launchPromise?.resolve("closed")
+                promise.resolve("closed")
+            }
         }
 
         View(DojahKycSdkReactExpoView.self) {
