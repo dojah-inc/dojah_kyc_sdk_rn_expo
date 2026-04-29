@@ -53,7 +53,7 @@ class DojahKycSdkReactExpoModule : Module() {
                             widgetId,
                             referenceId,
                             email,
-                            extraData = extraData?.toExtraUserData()?: ExtraUserData(),
+                            extraData = extraData?.toExtraUserData() ?: ExtraUserData()
                         )
                     Log.d("DojahKycSdk", "data passed -> ${extraData?.toExtraUserData()}")
                 } catch (e: Exception) {

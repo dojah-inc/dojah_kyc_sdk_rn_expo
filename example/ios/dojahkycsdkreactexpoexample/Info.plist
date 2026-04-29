@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.dojah.dojahKycRnExpo.example</string>
+          <string>com.dojah.kyc.reactexpo.app</string>
         </array>
       </dict>
     </array>
