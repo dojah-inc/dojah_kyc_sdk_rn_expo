@@ -9,11 +9,15 @@ const {
 
 const path = require('path');
 
+// Keep this in sync with `android/build.gradle` in this package.
+const DESUGAR_JDK_LIBS = 'com.android.tools:desugar_jdk_libs:2.0.4';
+
 const withDojahKyc = config => {
   return withPlugins(config, [
     // withAppBuildGradleModification,
     // withSettingsGradleModification,
     withGradlePropertiesModification,
+    withAndroidCoreLibraryDesugaring,
     withCustomSwiftAppDelegateRootView,
     withCustomObjcAppDelegateRootView,
   ]);
@@ -64,6 +68,104 @@ function withGradlePropertiesModification(config) {
 
     return config;
   });
+}
+
+/**
+ * Enable Android core library desugaring on the host app's `android/app/build.gradle`.
+ *
+ * The Dojah Kotlin SDK (`com.github.dojah-inc:sdk-kotlin`) uses Java 8+ APIs that
+ * are not available on older Android API levels. Without core library desugaring
+ * enabled on the consuming `:app` module, AGP fails with:
+ *
+ *   Dependency 'com.github.dojah-inc:sdk-kotlin:...' requires core library
+ *   desugaring to be enabled for :app.
+ *
+ * This modifier is idempotent: running `expo prebuild` multiple times will not
+ * duplicate the inserted lines.
+ */
+function withAndroidCoreLibraryDesugaring(config) {
+  return withAppBuildGradle(config, (config) => {
+    if (config.modResults.language !== 'groovy') {
+      WarningAggregator.addWarningAndroid(
+        'withDojahKyc',
+        'Cannot enable core library desugaring on non-Groovy app/build.gradle. ' +
+          'Please enable it manually (see Dojah docs).'
+      );
+      return config;
+    }
+
+    let contents = config.modResults.contents;
+
+    contents = ensureCompileOptionsWithDesugaring(contents);
+    contents = ensureCoreLibraryDesugaringDependency(contents);
+
+    config.modResults.contents = contents;
+    return config;
+  });
+}
+
+function ensureCompileOptionsWithDesugaring(contents) {
+  if (/coreLibraryDesugaringEnabled\s+true/.test(contents)) {
+    return contents;
+  }
+
+  // Try to extend an existing `compileOptions { ... }` block inside `android { ... }`.
+  const compileOptionsRegex = /compileOptions\s*\{([\s\S]*?)\}/;
+  const match = contents.match(compileOptionsRegex);
+  if (match) {
+    const inner = match[1];
+    const additions = [];
+    if (!/coreLibraryDesugaringEnabled/.test(inner)) {
+      additions.push('        coreLibraryDesugaringEnabled true');
+    }
+    if (!/sourceCompatibility/.test(inner)) {
+      additions.push('        sourceCompatibility JavaVersion.VERSION_1_8');
+    }
+    if (!/targetCompatibility/.test(inner)) {
+      additions.push('        targetCompatibility JavaVersion.VERSION_1_8');
+    }
+    if (additions.length === 0) {
+      return contents;
+    }
+    const updated = `compileOptions {${inner.trimEnd()}\n${additions.join('\n')}\n    }`;
+    return contents.replace(compileOptionsRegex, updated);
+  }
+
+  // Otherwise inject a new compileOptions block right after `android {`.
+  const androidBlockRegex = /android\s*\{/;
+  if (!androidBlockRegex.test(contents)) {
+    WarningAggregator.addWarningAndroid(
+      'withDojahKyc',
+      "Could not find `android { ... }` block in app/build.gradle. " +
+        'Please enable core library desugaring manually.'
+    );
+    return contents;
+  }
+
+  const compileOptionsBlock =
+    '\n    compileOptions {\n' +
+    '        coreLibraryDesugaringEnabled true\n' +
+    '        sourceCompatibility JavaVersion.VERSION_1_8\n' +
+    '        targetCompatibility JavaVersion.VERSION_1_8\n' +
+    '    }\n';
+
+  return contents.replace(androidBlockRegex, (match) => `${match}${compileOptionsBlock}`);
+}
+
+function ensureCoreLibraryDesugaringDependency(contents) {
+  if (/coreLibraryDesugaring\s+["']com\.android\.tools:desugar_jdk_libs/.test(contents)) {
+    return contents;
+  }
+
+  const depLine = `    coreLibraryDesugaring '${DESUGAR_JDK_LIBS}'`;
+
+  // Inject into the first top-level `dependencies { ... }` block.
+  const dependenciesRegex = /(^|\n)dependencies\s*\{/;
+  if (dependenciesRegex.test(contents)) {
+    return contents.replace(dependenciesRegex, (match) => `${match}\n${depLine}`);
+  }
+
+  return `${contents}\n\ndependencies {\n${depLine}\n}\n`;
 }
 
 

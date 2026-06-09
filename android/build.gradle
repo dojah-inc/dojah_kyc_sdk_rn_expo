@@ -37,6 +37,14 @@ android {
     versionCode 1
     versionName "0.1.0"
   }
+  // The Dojah Kotlin SDK uses Java 8+ APIs (java.time, etc.) that are not
+  // available on older Android API levels. Core library desugaring backports
+  // them at build time.
+  compileOptions {
+    coreLibraryDesugaringEnabled true
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
   lintOptions {
     abortOnError false
   }
@@ -50,6 +58,7 @@ repositories {
 
 
 dependencies {
+  coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
-  implementation 'com.github.dojah-inc:sdk-kotlin:v0.3.2'
+  implementation 'com.github.dojah-inc:sdk-kotlin:v0.3.3'
 }
