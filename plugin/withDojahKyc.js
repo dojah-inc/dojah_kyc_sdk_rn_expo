@@ -1,5 +1,6 @@
 const {
   withPlugins,
+  withAndroidManifest,
   withAppBuildGradle,
   withSettingsGradle,
   withGradleProperties,
@@ -12,12 +13,26 @@ const path = require('path');
 // Keep this in sync with `android/build.gradle` in this package.
 const DESUGAR_JDK_LIBS = 'com.android.tools:desugar_jdk_libs:2.0.4';
 
+// The Dojah Kotlin SDK (`com.github.dojah-inc:sdk-kotlin`) declares the legacy
+// storage permissions with `android:maxSdkVersion="28"`. Other Expo libraries
+// (e.g. `expo-image`) declare the same permissions with a higher
+// `maxSdkVersion`, which makes the Android manifest merger fail with a
+// conflicting-attribute error. Google recommends `maxSdkVersion="32"` when
+// supporting pre-Android-13 devices, so we override the value at the app level
+// (highest merge priority) and tell the merger to replace conflicting values.
+const STORAGE_PERMISSION_MAX_SDK_VERSION = '32';
+const STORAGE_PERMISSIONS = [
+  'android.permission.READ_EXTERNAL_STORAGE',
+  'android.permission.WRITE_EXTERNAL_STORAGE',
+];
+
 const withDojahKyc = config => {
   return withPlugins(config, [
     // withAppBuildGradleModification,
     // withSettingsGradleModification,
     withGradlePropertiesModification,
     withAndroidCoreLibraryDesugaring,
+    withDojahStoragePermissionMaxSdk,
     withCustomSwiftAppDelegateRootView,
     withCustomObjcAppDelegateRootView,
   ]);
@@ -166,6 +181,60 @@ function ensureCoreLibraryDesugaringDependency(contents) {
   }
 
   return `${contents}\n\ndependencies {\n${depLine}\n}\n`;
+}
+
+/**
+ * Resolve the Android manifest merger conflict between the Dojah Kotlin SDK and
+ * other Expo libraries (notably `expo-image`) over the legacy storage
+ * permissions.
+ *
+ * The Dojah SDK ships `READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE` with
+ * `android:maxSdkVersion="28"`, while `expo-image` ships them with a higher
+ * `maxSdkVersion`. Without intervention the merger aborts with:
+ *
+ *   Attribute uses-permission#android.permission.READ_EXTERNAL_STORAGE@maxSdkVersion
+ *   value=(28) ... is also present at [expo-image] value=(33).
+ *   Suggestion: add 'tools:replace="android:maxSdkVersion"' ...
+ *
+ * We force `maxSdkVersion="32"` at the app level (the highest-priority manifest)
+ * and add `tools:replace` so the app value wins over every library. `32` keeps
+ * the permission active on Android 9–12L (instead of cutting it off at 28),
+ * which matches Google's guidance for apps still supporting pre-Android-13
+ * devices.
+ *
+ * This modifier is idempotent: it updates the existing entry in place rather
+ * than appending duplicates on repeated `expo prebuild` runs.
+ */
+function withDojahStoragePermissionMaxSdk(config) {
+  return withAndroidManifest(config, (config) => {
+    const manifest = config.modResults.manifest;
+
+    // Ensure the `tools` namespace exists so `tools:replace` is valid.
+    manifest.$ = manifest.$ || {};
+    if (!manifest.$['xmlns:tools']) {
+      manifest.$['xmlns:tools'] = 'http://schemas.android.com/tools';
+    }
+
+    const permissions = manifest['uses-permission'] || [];
+
+    STORAGE_PERMISSIONS.forEach((permissionName) => {
+      let entry = permissions.find(
+        (item) => item.$ && item.$['android:name'] === permissionName
+      );
+
+      if (!entry) {
+        entry = { $: { 'android:name': permissionName } };
+        permissions.push(entry);
+      }
+
+      entry.$['android:maxSdkVersion'] = STORAGE_PERMISSION_MAX_SDK_VERSION;
+      entry.$['tools:replace'] = 'android:maxSdkVersion';
+    });
+
+    manifest['uses-permission'] = permissions;
+
+    return config;
+  });
 }
 
 
