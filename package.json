@@ -1,6 +1,6 @@
 {
   "name": "dojah-kyc-sdk-react-expo",
-  "version": "0.1.11",
+  "version": "0.1.17",
   "description": "Dojah Kyc",
   "main": "build/index.js",
   "types": "build/index.d.ts",
