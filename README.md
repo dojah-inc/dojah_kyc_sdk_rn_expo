@@ -6,6 +6,36 @@
 npm install dojah-kyc-sdk-react-expo
 ```
 
+## Requirements
+
+### Android
+
+The Dojah Kotlin SDK (`com.github.dojah-inc:sdk-kotlin`) and its transitive
+dependencies (`androidx.core:core[-ktx]:1.18.0`, `se.warting.signature:*`)
+compile against Android API 36 and require Android Gradle Plugin (AGP) 8.9.1+.
+
+| Tool | Minimum version |
+| --- | --- |
+| `compileSdkVersion` | `36` |
+| `targetSdkVersion` | `36` |
+| `buildToolsVersion` | `36.0.0` |
+| Android Gradle Plugin | `8.9.1` |
+| Gradle | `8.11.1` |
+
+> **Expo SDK 54 compatibility:** Expo SDK 54 defaults to `compileSdk 35` and AGP
+> `8.8.2`, which is below the minimums above. Without raising them the build
+> fails at `:app:checkDebugAarMetadata` with errors like
+> *"requires libraries and applications that depend on it to compile against
+> version 36 or later"* and *"requires Android Gradle plugin 8.9.1 or higher"*.
+>
+> **You don't need to do this by hand.** The bundled config plugin
+> (`dojah-kyc-sdk-react-expo`) raises `compileSdkVersion`/`targetSdkVersion`/
+> `buildToolsVersion`, forces AGP `8.9.1`, and bumps the Gradle wrapper (when
+> lower) automatically during `npx expo prebuild`. The plugin never lowers
+> values you have already set higher. The `expo-build-properties` block below is
+> the equivalent manual configuration if you prefer to pin the SDK versions
+> explicitly.
+
 ## Setup
 
 ### Install expo-build-properties if you don't have it
@@ -35,6 +65,11 @@ npx expo install expo-build-properties
       [
         "expo-build-properties",
         {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0"
+          },
           "ios": {
             "extraPods": [
               {
