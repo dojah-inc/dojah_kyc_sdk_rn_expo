@@ -35,7 +35,7 @@
   "homepage": "https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo#readme",
   "devDependencies": {
     "@types/react": "~19.0.0",
-    "expo": "~53.0.0",
+    "expo": "~56.0.12",
     "expo-module-scripts": "^4.1.6",
     "react-native": "0.79.1"
   },
