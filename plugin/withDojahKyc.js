@@ -2,6 +2,7 @@ const {
   withPlugins,
   withAndroidManifest,
   withAppBuildGradle,
+  withMainActivity,
   withProjectBuildGradle,
   withSettingsGradle,
   withGradleProperties,
@@ -56,6 +57,7 @@ const withDojahKyc = config => {
     withDojahGradleWrapperVersion,
     withAndroidCoreLibraryDesugaring,
     withDojahStoragePermissionMaxSdk,
+    withDojahOnUserLeaveHintGuard,
   ]);
 };
 
@@ -456,5 +458,110 @@ function withDojahStoragePermissionMaxSdk(config) {
   });
 }
 
+
+// Marker used to keep the injection idempotent across repeated `expo prebuild` runs.
+const ON_USER_LEAVE_HINT_MARKER = '@dojah-kyc-sdk: onUserLeaveHint guard';
+
+const ON_USER_LEAVE_HINT_METHOD_KOTLIN = `
+  // ${ON_USER_LEAVE_HINT_MARKER}
+  // Works around a React Native 0.79 crash: ReactActivityDelegate.onUserLeaveHint
+  // calls Objects.requireNonNull(getReactHost()) on the New Architecture, but
+  // getReactHost() can be null while the activity is leaving (e.g. when the Dojah
+  // SDK launches its native verification flow over the React activity). Swallowing
+  // the NPE keeps the host app from crashing; the leave hint is non-critical.
+  override fun onUserLeaveHint() {
+    try {
+      super.onUserLeaveHint()
+    } catch (e: NullPointerException) {
+      android.util.Log.w("DojahKyc", "Ignored NPE from onUserLeaveHint (ReactHost not ready)", e)
+    }
+  }
+`;
+
+const ON_USER_LEAVE_HINT_METHOD_JAVA = `
+  // ${ON_USER_LEAVE_HINT_MARKER}
+  // Works around a React Native 0.79 crash: ReactActivityDelegate.onUserLeaveHint
+  // calls Objects.requireNonNull(getReactHost()) on the New Architecture, but
+  // getReactHost() can be null while the activity is leaving (e.g. when the Dojah
+  // SDK launches its native verification flow over the React activity). Swallowing
+  // the NPE keeps the host app from crashing; the leave hint is non-critical.
+  @Override
+  public void onUserLeaveHint() {
+    try {
+      super.onUserLeaveHint();
+    } catch (NullPointerException e) {
+      android.util.Log.w("DojahKyc", "Ignored NPE from onUserLeaveHint (ReactHost not ready)", e);
+    }
+  }
+`;
+
+/**
+ * Inject an `onUserLeaveHint` override into the host app's `MainActivity` that
+ * guards against a React Native 0.79 NullPointerException.
+ *
+ * On the New Architecture, `ReactActivityDelegate.onUserLeaveHint` executes
+ * `Objects.requireNonNull(getReactHost())`. When the Dojah SDK launches its own
+ * native activity over the React activity, Android delivers `onUserLeaveHint`
+ * while `getReactHost()` is momentarily null, throwing an NPE that crashes the
+ * host app. RN 0.79.1 does not include the upstream null-check fix, so we inject
+ * a defensive override here.
+ *
+ * Idempotent: repeated `expo prebuild` runs detect the marker and skip.
+ */
+function withDojahOnUserLeaveHintGuard(config) {
+  return withMainActivity(config, (config) => {
+    let contents = config.modResults.contents;
+    const language = config.modResults.language;
+
+    if (contents.includes(ON_USER_LEAVE_HINT_MARKER)) {
+      return config;
+    }
+
+    if (language === 'kt') {
+      // Insert right after the MainActivity class body opens.
+      const classBodyRegex = /(class\s+MainActivity\s*:\s*ReactActivity\s*\([^)]*\)\s*\{)/;
+      if (!classBodyRegex.test(contents)) {
+        WarningAggregator.addWarningAndroid(
+          'withDojahKyc',
+          'Could not locate the MainActivity class body to inject the ' +
+            'onUserLeaveHint guard. If your app crashes on Android with a ' +
+            'NullPointerException in ReactActivityDelegate.onUserLeaveHint, add ' +
+            'the override manually (see Dojah docs).'
+        );
+        return config;
+      }
+      contents = contents.replace(
+        classBodyRegex,
+        (match) => `${match}\n${ON_USER_LEAVE_HINT_METHOD_KOTLIN}`
+      );
+    } else if (language === 'java') {
+      const classBodyRegex = /(class\s+MainActivity\s+extends\s+ReactActivity\s*\{)/;
+      if (!classBodyRegex.test(contents)) {
+        WarningAggregator.addWarningAndroid(
+          'withDojahKyc',
+          'Could not locate the MainActivity class body to inject the ' +
+            'onUserLeaveHint guard. If your app crashes on Android with a ' +
+            'NullPointerException in ReactActivityDelegate.onUserLeaveHint, add ' +
+            'the override manually (see Dojah docs).'
+        );
+        return config;
+      }
+      contents = contents.replace(
+        classBodyRegex,
+        (match) => `${match}\n${ON_USER_LEAVE_HINT_METHOD_JAVA}`
+      );
+    } else {
+      WarningAggregator.addWarningAndroid(
+        'withDojahKyc',
+        `Unsupported MainActivity language "${language}". Could not inject the ` +
+          'onUserLeaveHint guard automatically.'
+      );
+      return config;
+    }
+
+    config.modResults.contents = contents;
+    return config;
+  });
+}
 
 module.exports = withDojahKyc;

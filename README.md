@@ -1,5 +1,7 @@
 # Dojah KYC SDK (React Native Expo)
 
+See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
 ## Installation
 
 ```sh

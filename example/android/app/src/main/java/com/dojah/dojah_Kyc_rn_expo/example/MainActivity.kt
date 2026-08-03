@@ -20,6 +20,22 @@ class MainActivity : ReactActivity() {
   }
 
   /**
+   * Guard against a React Native 0.79 crash: on the New Architecture,
+   * [ReactActivityDelegate.onUserLeaveHint] runs `Objects.requireNonNull(getReactHost())`,
+   * but `getReactHost()` can be null while the activity is leaving (e.g. when the
+   * Dojah SDK launches its native verification flow over the React activity),
+   * throwing an NPE. RN 0.79.1 lacks the upstream null-check, so we swallow it —
+   * the leave hint is non-critical.
+   */
+  override fun onUserLeaveHint() {
+    try {
+      super.onUserLeaveHint()
+    } catch (e: NullPointerException) {
+      android.util.Log.w("DojahKyc", "Ignored NPE from onUserLeaveHint (ReactHost not ready)", e)
+    }
+  }
+
+  /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
    * rendering of the component.
    */
