@@ -4,6 +4,22 @@ All notable changes to `dojah-kyc-sdk-react-expo` are documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.21] - 2026-08-15
+
+### Fixed
+
+- Resolved an Android crash in Liveness/Selfie capture when the fragment view
+  was destroyed before `captureReadyTimer` completed (for example on back
+  navigation or other lifecycle changes). The timer could still resume and
+  call `getBinding()` after `onDestroyView()`, which threw
+  `IllegalStateException: Can't access the Fragment View's LifecycleOwner`.
+- Fixed Face detection initialisation on the Selfie retake flow.
+
+### Changed
+
+- Upgraded the Android Kotlin SDK from `com.github.dojah-inc:sdk-kotlin:v0.4.0`
+  to `v0.4.1`.
+
 ## [0.1.19] - 2026-08-03
 
 ### Fixed
@@ -21,4 +37,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Refactored liveness image detection with Google ML Kit.
 - Upgraded the Android Kotlin SDK to `com.github.dojah-inc:sdk-kotlin:v0.4.0`.
 
+[0.1.21]: https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo/releases/tag/v0.1.21
 [0.1.19]: https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo/releases/tag/v0.1.19

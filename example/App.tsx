@@ -13,7 +13,7 @@ import {
 
 export default function App() {
   const onChangePayload = useEvent(DojahKycSdk, "onChange");
-  const [widgetId, setWidgetId] = useState("68839af7cc3a4ec28bf1de40");
+  const [widgetId, setWidgetId] = useState("6989d125b972a9f457f3d0a1");
   const [referenceId, setReferenceId] = useState("");
   const [email, setEmail] = useState("");
 
@@ -66,10 +66,13 @@ export default function App() {
                 referenceId.trim() || null,
                 email.trim() || null,
                 {
-                  govId: {
-                    passport:
-                      "https://nairametrics.com/wp-content/uploads/2013/11/nigeria-national-identity-smart-cards-combine-id-and-mastercard.jpg",
-                  },
+                  // Baseline repro: no pre-supplied govId, matching a plain
+                  // integration. Re-enable to test whether pre-filled ID data
+                  // affects the Gov Data page's selected-ID state.
+                  // govId: {
+                  //   passport:
+                  //     "https://nairametrics.com/wp-content/uploads/2013/11/nigeria-national-identity-smart-cards-combine-id-and-mastercard.jpg",
+                  // },
                   // userData: {
                   //   firstName: 'John',
                   //   lastName: 'Doe',

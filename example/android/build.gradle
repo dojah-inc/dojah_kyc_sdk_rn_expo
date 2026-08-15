@@ -35,3 +35,13 @@ allprojects {
 
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
+
+// @dojah-kyc-sdk: pin Android Gradle Plugin to a version compatible with the
+// Dojah Kotlin SDK (androidx.core 1.18.0 requires AGP 8.9.1+).
+buildscript {
+    configurations.classpath {
+        resolutionStrategy {
+            force("com.android.tools.build:gradle:8.9.1")
+        }
+    }
+}
