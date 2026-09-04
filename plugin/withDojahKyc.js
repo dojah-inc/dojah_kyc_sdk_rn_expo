@@ -22,17 +22,43 @@ const DESUGAR_JDK_LIBS = 'com.android.tools:desugar_jdk_libs:2.0.4';
 // `se.warting.signature:*`) compile against Android API 36 and declare that
 // consumers must use Android Gradle Plugin 8.9.1+.
 //
-// Expo SDK 54 defaults to `compileSdk 35` and AGP `8.8.2`, so the host app
-// build fails at `:app:checkDebugAarMetadata` unless these are raised. This
-// plugin bumps them automatically during prebuild. Keep these in sync with the
-// "Android requirements" section of the README.
+// Older Expo SDKs default below these values, so the host app build fails at
+// `:app:checkDebugAarMetadata` unless they are raised. This plugin bumps them
+// automatically during prebuild. Every value here is a minimum: newer hosts
+// keep what they already ship (React Native 0.81, for example, uses AGP
+// 8.11.0). Keep these in sync with the "Android requirements" section of the
+// README.
 const REQUIRED_COMPILE_SDK_VERSION = 36;
 const REQUIRED_TARGET_SDK_VERSION = 36;
 const REQUIRED_BUILD_TOOLS_VERSION = '36.0.0';
 const REQUIRED_AGP_VERSION = '8.9.1';
 // AGP 8.9.1 requires Gradle 8.11.1+. Expo SDK 54 already ships a newer Gradle,
-// but we bump older wrappers (e.g. SDK 53) so the forced AGP can run.
+// but we bump older wrappers (e.g. SDK 53) so the required AGP can run.
 const REQUIRED_GRADLE_VERSION = '8.11.1';
+
+// `com.github.dojah-inc:sdk-kotlin` is compiled with Kotlin 2.2.10: its classes
+// carry Kotlin metadata version 2.2.0 and it declares `kotlin-stdlib:2.2.10` as
+// an api dependency. React Native 0.81 / Expo SDK 54 default to Kotlin 2.1.20,
+// whose compiler only reads metadata up to 2.1.0, so
+// `:dojah-kyc-sdk-react-expo:compileReleaseKotlin` dies with "Internal compiler
+// error" while reading the SDK.
+//
+// Expo resolves the matching KSP release from this value (its lookup table maps
+// 2.2.10 -> 2.2.10-2.0.2), so consumers must not pin `android.kspVersion`
+// themselves. Keep this in sync with the version the Kotlin SDK is built with.
+const REQUIRED_KOTLIN_VERSION = '2.2.10';
+
+// Gradle properties this plugin manages. Versions of the plugin up to 0.1.21
+// appended `android.enableJetifier` on every prebuild instead of replacing it,
+// so existing projects can carry duplicates that we clean up.
+const MANAGED_GRADLE_PROPERTIES = [
+  'android.enableJetifier',
+  'android.compileSdkVersion',
+  'android.targetSdkVersion',
+  'android.buildToolsVersion',
+  'android.kotlinVersion',
+  'android.suppressUnsupportedCompileSdk',
+];
 
 // The Dojah Kotlin SDK (`com.github.dojah-inc:sdk-kotlin`) declares the legacy
 // storage permissions with `android:maxSdkVersion="28"`. Other Expo libraries
@@ -108,9 +134,16 @@ function withDojahAndroidSdkVersions(config) {
       'android.buildToolsVersion',
       REQUIRED_BUILD_TOOLS_VERSION
     );
+    ensureMinVersionGradleProperty(
+      config.modResults,
+      'android.kotlinVersion',
+      REQUIRED_KOTLIN_VERSION
+    );
+
+    warnOnMismatchedKspVersion(config.modResults);
 
     // AGP only "supports" a known set of compileSdk levels and otherwise emits
-    // a build-failing warning. We force AGP 8.9.1 (which supports API 36)
+    // a build-failing warning. We require AGP 8.9.1+ (which supports API 36)
     // below, but keep this as a safety net for stricter setups.
     setGradleProperty(
       config.modResults,
@@ -122,10 +155,55 @@ function withDojahAndroidSdkVersions(config) {
   });
 }
 
+/**
+ * Warn when the host app pins `android.kspVersion` to a release that does not
+ * belong to the Kotlin version we just set.
+ *
+ * Expo derives KSP from `android.kotlinVersion` automatically, but an explicit
+ * `android.kspVersion` wins over that lookup. A stale pin (e.g. the Expo SDK 54
+ * default `2.1.20-2.0.1`) then fails the build in a way that looks unrelated to
+ * the Kotlin version.
+ */
+function warnOnMismatchedKspVersion(modResults) {
+  const ksp = findGradleProperty(modResults, 'android.kspVersion');
+  if (!ksp) {
+    return;
+  }
+
+  const kotlin = findGradleProperty(modResults, 'android.kotlinVersion');
+  const kotlinVersion = kotlin ? kotlin.value : REQUIRED_KOTLIN_VERSION;
+
+  if (!String(ksp.value).startsWith(`${kotlinVersion}-`)) {
+    WarningAggregator.addWarningAndroid(
+      'withDojahKyc',
+      `android.kspVersion is pinned to "${ksp.value}", which does not match ` +
+        `Kotlin ${kotlinVersion}. Remove the pin so Expo can resolve the ` +
+        'matching KSP release, or update it to a KSP build for that Kotlin ' +
+        'version.'
+    );
+  }
+}
+
 function findGradleProperty(modResults, key) {
   return modResults.find(
     (item) => item && item.type === 'property' && item.key === key
   );
+}
+
+/**
+ * Collapse repeated entries for `key` down to a single one.
+ *
+ * Gradle honours the last occurrence in a properties file, so that is the one
+ * we keep.
+ */
+function dedupeGradleProperty(modResults, key) {
+  const matches = modResults.filter(
+    (item) => item && item.type === 'property' && item.key === key
+  );
+
+  matches.slice(0, -1).forEach((duplicate) => {
+    modResults.splice(modResults.indexOf(duplicate), 1);
+  });
 }
 
 function setGradleProperty(modResults, key, value) {
@@ -160,25 +238,38 @@ function ensureMinVersionGradleProperty(modResults, key, minValue) {
   }
 }
 
+// Markers used to keep the AGP injection idempotent across repeated prebuilds.
+const AGP_FLOOR_MARKER = '@dojah-kyc-sdk: Android Gradle Plugin floor';
+const AGP_FLOOR_BLOCK_REGEX = new RegExp(
+  `\\n// ${AGP_FLOOR_MARKER}[\\s\\S]*?\\n\\}\\n`
+);
+// Plugin versions up to 0.1.21 wrote a `force(...)` block that pinned AGP
+// exactly, downgrading hosts that shipped something newer.
+const LEGACY_AGP_FORCE_BLOCK_REGEX =
+  /\n\/\/ @dojah-kyc-sdk: pin Android Gradle Plugin[\s\S]*?\n\}\n/;
+
 /**
- * Force the Android Gradle Plugin version on the host app's root
- * `android/build.gradle`.
+ * Raise the Android Gradle Plugin version on the host app's root
+ * `android/build.gradle` to the minimum the Dojah Kotlin SDK needs.
  *
  * `androidx.core:core[-ktx]:1.18.0` (pulled in transitively by the Dojah Kotlin
  * SDK) hard-requires AGP 8.9.1+; older AGP fails the build at
  * `:app:checkDebugAarMetadata`. Expo SDK 54 cannot raise AGP via
- * `expo-build-properties`, so we pin it with a buildscript resolution strategy
- * (the highest-priority override, beating version-catalog constraints).
+ * `expo-build-properties`, so we add a buildscript constraint here.
  *
- * Idempotent: re-running prebuild updates the forced version in place instead of
- * appending duplicate blocks.
+ * This is a floor, not a pin. Gradle resolves `require` to the highest version
+ * any participant asks for, so a host that already uses something newer (React
+ * Native 0.81 ships AGP 8.11.0) keeps its version.
+ *
+ * Idempotent: re-running prebuild rewrites our block rather than appending a
+ * second one, and migrates the pinning block written by earlier versions.
  */
 function withDojahAndroidGradlePluginVersion(config) {
   return withProjectBuildGradle(config, (config) => {
     if (config.modResults.language !== 'groovy') {
       WarningAggregator.addWarningAndroid(
         'withDojahKyc',
-        'Cannot force the Android Gradle Plugin version on a non-Groovy ' +
+        'Cannot raise the Android Gradle Plugin version on a non-Groovy ' +
           `root build.gradle. Please ensure AGP ${REQUIRED_AGP_VERSION}+ ` +
           'is used (see Dojah docs).'
       );
@@ -186,27 +277,27 @@ function withDojahAndroidGradlePluginVersion(config) {
     }
 
     let contents = config.modResults.contents;
-    const forceLineRegex =
-      /force\(["']com\.android\.tools\.build:gradle:[^"')]+["']\)/;
 
-    if (forceLineRegex.test(contents)) {
-      contents = contents.replace(
-        forceLineRegex,
-        `force("com.android.tools.build:gradle:${REQUIRED_AGP_VERSION}")`
-      );
-    } else {
-      contents += `
-// @dojah-kyc-sdk: pin Android Gradle Plugin to a version compatible with the
-// Dojah Kotlin SDK (androidx.core 1.18.0 requires AGP ${REQUIRED_AGP_VERSION}+).
+    contents = contents.replace(LEGACY_AGP_FORCE_BLOCK_REGEX, '');
+    contents = contents.replace(AGP_FLOOR_BLOCK_REGEX, '');
+
+    contents += `
+// ${AGP_FLOOR_MARKER}
+// androidx.core 1.18.0, pulled in transitively by the Dojah Kotlin SDK, requires
+// AGP ${REQUIRED_AGP_VERSION}+. This constraint only raises the version: Gradle keeps a
+// newer AGP when the host app or React Native asks for one.
 buildscript {
-    configurations.classpath {
-        resolutionStrategy {
-            force("com.android.tools.build:gradle:${REQUIRED_AGP_VERSION}")
+    dependencies {
+        constraints {
+            classpath("com.android.tools.build:gradle") {
+                version {
+                    require "${REQUIRED_AGP_VERSION}"
+                }
+            }
         }
     }
 }
 `;
-    }
 
     config.modResults.contents = contents;
     return config;
@@ -292,15 +383,11 @@ function withGradlePropertiesModification(config) {
       config.modResults = [];
     }
 
-    [
-      {
-        type: 'property',
-        key: 'android.enableJetifier',
-        value: 'true',
-      }
-    ].map((entry) => {
-      config.modResults.push(entry);
+    MANAGED_GRADLE_PROPERTIES.forEach((key) => {
+      dedupeGradleProperty(config.modResults, key);
     });
+
+    setGradleProperty(config.modResults, 'android.enableJetifier', 'true');
 
     return config;
   });

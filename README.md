@@ -14,7 +14,8 @@ npm install dojah-kyc-sdk-react-expo
 
 The Dojah Kotlin SDK (`com.github.dojah-inc:sdk-kotlin`) and its transitive
 dependencies (`androidx.core:core[-ktx]:1.18.0`, `se.warting.signature:*`)
-compile against Android API 36 and require Android Gradle Plugin (AGP) 8.9.1+.
+compile against Android API 36, require Android Gradle Plugin (AGP) 8.9.1+, and
+are built with Kotlin 2.2.10.
 
 | Tool | Minimum version |
 | --- | --- |
@@ -23,20 +24,30 @@ compile against Android API 36 and require Android Gradle Plugin (AGP) 8.9.1+.
 | `buildToolsVersion` | `36.0.0` |
 | Android Gradle Plugin | `8.9.1` |
 | Gradle | `8.11.1` |
+| Kotlin | `2.2.10` |
 
-> **Expo SDK 54 compatibility:** Expo SDK 54 defaults to `compileSdk 35` and AGP
-> `8.8.2`, which is below the minimums above. Without raising them the build
-> fails at `:app:checkDebugAarMetadata` with errors like
-> *"requires libraries and applications that depend on it to compile against
-> version 36 or later"* and *"requires Android Gradle plugin 8.9.1 or higher"*.
+> **Kotlin 2.2.10 is required.** The Dojah Kotlin SDK is compiled with Kotlin
+> 2.2.10, so its classes carry Kotlin metadata version `2.2.0`. Expo SDK 54 and
+> React Native 0.81 default to Kotlin 2.1.20, whose compiler only reads metadata
+> up to `2.1.0`. On that default the build fails with:
 >
-> **You don't need to do this by hand.** The bundled config plugin
+> ```
+> Execution failed for task ':dojah-kyc-sdk-react-expo:compileReleaseKotlin'.
+> > A failure occurred while executing ... GradleKotlinCompilerWorkAction
+>    > Internal compiler error. See log for more details
+> ```
+>
+> Do **not** set `android.kspVersion` yourself. Expo derives the matching KSP
+> release from the Kotlin version, and a stale pin (such as the Expo SDK 54
+> default `2.1.20-2.0.1`) will override that and break the build.
+
+> **You don't need to configure this by hand.** The bundled config plugin
 > (`dojah-kyc-sdk-react-expo`) raises `compileSdkVersion`/`targetSdkVersion`/
-> `buildToolsVersion`, forces AGP `8.9.1`, and bumps the Gradle wrapper (when
-> lower) automatically during `npx expo prebuild`. The plugin never lowers
-> values you have already set higher. The `expo-build-properties` block below is
-> the equivalent manual configuration if you prefer to pin the SDK versions
-> explicitly.
+> `buildToolsVersion`/`kotlinVersion`, requires AGP `8.9.1`, and bumps the Gradle
+> wrapper automatically during `npx expo prebuild`. Every one of these is a
+> minimum, so the plugin never lowers a version your project already sets higher
+> — a host on AGP 8.11.0 keeps it. The `expo-build-properties` block below is the
+> equivalent manual configuration if you prefer to set the versions explicitly.
 
 ## Setup
 
@@ -70,7 +81,8 @@ npx expo install expo-build-properties
           "android": {
             "compileSdkVersion": 36,
             "targetSdkVersion": 36,
-            "buildToolsVersion": "36.0.0"
+            "buildToolsVersion": "36.0.0",
+            "kotlinVersion": "2.2.10"
           },
           "ios": {
             "extraPods": [
