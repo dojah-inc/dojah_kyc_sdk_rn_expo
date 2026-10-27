@@ -4,6 +4,18 @@ All notable changes to `dojah-kyc-sdk-react-expo` are documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.23] - 2026-10-27
+
+### Fixed
+
+- Removed the FaceTec SDK implementation.
+- Fixed an in-memory dependency container crash on Android.
+
+### Changed
+
+- Upgraded the Android Kotlin SDK from `com.github.dojah-inc:sdk-kotlin:v0.4.1`
+  to `v0.4.5`.
+
 ## [0.1.22] - 2026-09-04
 
 ### Fixed
@@ -57,6 +69,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Refactored liveness image detection with Google ML Kit.
 - Upgraded the Android Kotlin SDK to `com.github.dojah-inc:sdk-kotlin:v0.4.0`.
 
+[0.1.23]: https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo/releases/tag/v0.1.23
 [0.1.22]: https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo/releases/tag/v0.1.22
 [0.1.21]: https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo/releases/tag/v0.1.21
 [0.1.19]: https://github.com/dojah-inc/dojah_kyc_sdk_rn_expo/releases/tag/v0.1.19
